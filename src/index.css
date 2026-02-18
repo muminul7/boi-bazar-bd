@@ -2,95 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* =====================================================
+   EKITAB DESIGN SYSTEM — Bengali Ebook Store
+   Premium, trustworthy, clean, modern
+   Color palette: Deep Teal + Warm Gold + Clean White
+   ===================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Noto+Serif+Bengali:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core Brand */
+    --background: 42 33% 97%;
+    --foreground: 210 25% 12%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 210 25% 12%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 210 25% 12%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary: Deep Teal */
+    --primary: 174 65% 26%;
+    --primary-foreground: 0 0% 100%;
+    --primary-light: 174 55% 35%;
+    --primary-glow: 174 60% 45%;
+    --primary-subtle: 174 40% 93%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary: Warm Gold */
+    --secondary: 39 88% 52%;
+    --secondary-foreground: 210 25% 12%;
+    --secondary-light: 39 85% 65%;
+    --secondary-subtle: 39 70% 94%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Surface Tones */
+    --muted: 210 20% 94%;
+    --muted-foreground: 210 15% 48%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 174 65% 26%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 210 20% 88%;
+    --input: 210 20% 88%;
+    --ring: 174 65% 26%;
 
-    --radius: 0.5rem;
+    --radius: 0.625rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Sidebar */
+    --sidebar-background: 210 25% 10%;
+    --sidebar-foreground: 210 20% 90%;
+    --sidebar-primary: 174 65% 26%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 20% 18%;
+    --sidebar-accent-foreground: 210 20% 90%;
+    --sidebar-border: 210 20% 18%;
+    --sidebar-ring: 174 65% 26%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Custom brand tokens */
+    --hero-bg: 174 65% 22%;
+    --hero-text: 0 0% 100%;
+    --gold: 39 88% 52%;
+    --gold-light: 39 85% 65%;
+    --cream: 42 33% 97%;
+    --dark: 210 25% 12%;
+    --surface: 0 0% 100%;
+    --surface-raised: 210 20% 97%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    /* Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(174 65% 22%) 0%, hsl(194 65% 20%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(39 88% 48%) 0%, hsl(32 90% 55%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(174 30% 97%) 100%);
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Shadows */
+    --shadow-sm: 0 1px 3px hsl(174 30% 20% / 0.08), 0 1px 2px hsl(174 30% 20% / 0.06);
+    --shadow-md: 0 4px 12px hsl(174 30% 20% / 0.1), 0 2px 4px hsl(174 30% 20% / 0.06);
+    --shadow-lg: 0 10px 30px hsl(174 30% 20% / 0.12), 0 4px 10px hsl(174 30% 20% / 0.08);
+    --shadow-xl: 0 20px 50px hsl(174 30% 20% / 0.15), 0 8px 20px hsl(174 30% 20% / 0.1);
+    --shadow-gold: 0 8px 25px hsl(39 88% 52% / 0.3);
+    --shadow-teal: 0 8px 25px hsl(174 65% 26% / 0.3);
 
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Fonts */
+    --font-bengali: 'Hind Siliguri', 'Noto Serif Bengali', sans-serif;
+    --font-body: 'Inter', sans-serif;
+    --font-display: 'Inter', sans-serif;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --background: 210 30% 8%;
+    --foreground: 42 20% 95%;
+    --card: 210 25% 11%;
+    --card-foreground: 42 20% 95%;
+    --popover: 210 25% 11%;
+    --popover-foreground: 42 20% 95%;
+    --primary: 174 55% 40%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 39 88% 52%;
+    --secondary-foreground: 210 25% 12%;
+    --muted: 210 20% 16%;
+    --muted-foreground: 210 15% 60%;
+    --accent: 174 55% 40%;
+    --accent-foreground: 0 0% 100%;
+    --border: 210 20% 20%;
+    --input: 210 20% 20%;
+    --ring: 174 55% 40%;
   }
 }
 
@@ -101,5 +118,162 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-bengali), var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-bengali), var(--font-display);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+
+  .font-bengali {
+    font-family: var(--font-bengali);
+  }
+
+  .font-latin {
+    font-family: var(--font-body);
   }
 }
+
+/* =====================================================
+   CUSTOM UTILITIES
+   ===================================================== */
+
+@layer utilities {
+  /* Gradient backgrounds */
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-gold {
+    background: var(--gradient-gold);
+  }
+
+  .bg-gradient-card {
+    background: var(--gradient-card);
+  }
+
+  /* Text gradient */
+  .text-gradient-gold {
+    background: var(--gradient-gold);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .text-gradient-teal {
+    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Shadows */
+  .shadow-brand-sm { box-shadow: var(--shadow-sm); }
+  .shadow-brand-md { box-shadow: var(--shadow-md); }
+  .shadow-brand-lg { box-shadow: var(--shadow-lg); }
+  .shadow-brand-xl { box-shadow: var(--shadow-xl); }
+  .shadow-gold { box-shadow: var(--shadow-gold); }
+  .shadow-teal { box-shadow: var(--shadow-teal); }
+
+  /* Hover lift */
+  .hover-lift {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* Glass morphism */
+  .glass {
+    background: hsl(0 0% 100% / 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsl(0 0% 100% / 0.2);
+  }
+
+  /* Teal text */
+  .text-primary-brand {
+    color: hsl(var(--primary));
+  }
+
+  /* Gold text */
+  .text-gold {
+    color: hsl(var(--gold));
+  }
+
+  /* Section padding */
+  .section-py {
+    padding-top: 5rem;
+    padding-bottom: 5rem;
+  }
+
+  /* Badge pill */
+  .badge-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.875rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    font-family: var(--font-bengali);
+  }
+
+  /* Scrollbar */
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+  /* Line clamp */
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+  }
+}
+
+/* =====================================================
+   COMPONENT ANIMATIONS
+   ===================================================== */
+
+@layer components {
+  .animate-fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Star rating */
+.star-filled { color: hsl(var(--gold)); }
+.star-empty { color: hsl(210 20% 80%); }

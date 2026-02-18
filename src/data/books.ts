@@ -1,0 +1,302 @@
+export interface Book {
+  id: string;
+  slug: string;
+  title: string;
+  subtitle: string;
+  author: string;
+  cover: string;
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviewCount: number;
+  category: string;
+  tags: string[];
+  featured: boolean;
+  bestSeller: boolean;
+  newRelease: boolean;
+  description: string;
+  shortDescription: string;
+  outcomes: string[];
+  chapters: { title: string; topics: string[] }[];
+  suitableFor: string[];
+  pages: number;
+  format: string;
+  language: string;
+  publishedDate: string;
+  reviews: {
+    name: string;
+    avatar: string;
+    rating: number;
+    text: string;
+    date: string;
+    verified: boolean;
+  }[];
+  faq: { question: string; answer: string }[];
+}
+
+import bookCover1 from "@/assets/book-cover-1.jpg";
+import bookCover2 from "@/assets/book-cover-2.jpg";
+import bookCover3 from "@/assets/book-cover-3.jpg";
+import bookCover4 from "@/assets/book-cover-4.jpg";
+import bookCover5 from "@/assets/book-cover-5.jpg";
+import bookCover6 from "@/assets/book-cover-6.jpg";
+
+export const books: Book[] = [
+  {
+    id: "1",
+    slug: "ecommerce-shuru-theke-safol",
+    title: "ই-কমার্স: শুরু থেকে সফল",
+    subtitle: "বাংলাদেশে অনলাইন ব্যবসা গড়ার সম্পূর্ণ গাইড",
+    author: "মো. রাফি আহমেদ",
+    cover: bookCover1,
+    price: 299,
+    originalPrice: 599,
+    rating: 4.9,
+    reviewCount: 342,
+    category: "ই-কমার্স",
+    tags: ["শুরুর গাইড", "অনলাইন ব্যবসা", "বাংলাদেশ"],
+    featured: true,
+    bestSeller: true,
+    newRelease: false,
+    shortDescription: "শূন্য থেকে শুরু করে মাসে লক্ষ টাকা আয় করার বাস্তব রোডম্যাপ — বাংলাদেশের সফল উদ্যোক্তাদের অভিজ্ঞতা থেকে।",
+    description: "বাংলাদেশের ই-কমার্স মার্কেটে টিকে থাকা এবং দ্রুত বৃদ্ধি পাওয়ার জন্য যা যা জানতে হবে তার সবকিছু এই বইয়ে আছে। ব্যবসার আইডিয়া নির্বাচন থেকে শুরু করে প্রোডাক্ট সোর্সিং, মার্কেটিং, পেমেন্ট গেটওয়ে সেটআপ, ডেলিভারি ম্যানেজমেন্ট পর্যন্ত সবকিছু ধাপে ধাপে।",
+    outcomes: [
+      "মাত্র ৩০ দিনে আপনার প্রথম অনলাইন স্টোর লঞ্চ করুন",
+      "প্রোডাক্ট রিসার্চ করে লাভজনক নিশ খুঁজে বের করুন",
+      "Facebook ও Instagram বিজ্ঞাপন দিয়ে কম খরচে বিক্রি বাড়ান",
+      "বিশ্বস্ত সাপ্লায়ার খুঁজে বের করুন এবং দর কষাকষি করুন",
+      "কাস্টমার সার্ভিস দিয়ে রিটেন্শন রেট বাড়ান",
+    ],
+    chapters: [
+      { title: "ই-কমার্সের ভিত্তি", topics: ["বাজার বিশ্লেষণ", "নিশ নির্বাচন", "প্রতিযোগী বিশ্লেষণ"] },
+      { title: "স্টোর তৈরি", topics: ["প্ল্যাটফর্ম বাছাই", "ব্র্যান্ডিং", "প্রোডাক্ট লিস্টিং"] },
+      { title: "মার্কেটিং কৌশল", topics: ["Facebook Ads", "SEO", "ইমেইল মার্কেটিং"] },
+      { title: "অপারেশন ম্যানেজমেন্ট", topics: ["ইনভেন্টরি", "ডেলিভারি", "রিটার্ন পলিসি"] },
+    ],
+    suitableFor: ["নতুন উদ্যোক্তা", "ছোট ব্যবসার মালিক", "ফ্রিল্যান্সার"],
+    pages: 280,
+    format: "PDF",
+    language: "বাংলা",
+    publishedDate: "২০২৪",
+    reviews: [
+      { name: "তানভীর হাসান", avatar: "T", rating: 5, text: "এই বইটা পড়ে আমার ব্যবসার ধারণাই বদলে গেছে। মাত্র ২ মাসে আমার প্রথম অর্ডার পেয়েছি।", date: "জানুয়ারি ২০২৪", verified: true },
+      { name: "সুমাইয়া বেগম", avatar: "S", rating: 5, text: "গৃহিণী থেকে উদ্যোক্তা হওয়ার পথে এই বই আমার সেরা সঙ্গী। খুব সহজ ভাষায় সব ব্যাখ্যা করা।", date: "ফেব্রুয়ারি ২০২৪", verified: true },
+      { name: "রাহুল দাস", avatar: "R", rating: 5, text: "Facebook Ads সেকশনটা অসাধারণ। প্র্যাকটিক্যাল উদাহরণ দিয়ে সব বুঝিয়েছে।", date: "মার্চ ২০২৪", verified: true },
+    ],
+    faq: [
+      { question: "এই বই কি সম্পূর্ণ বাংলায়?", answer: "হ্যাঁ, সম্পূর্ণ বাংলায় লেখা। ইংরেজি টার্মগুলো বাংলায় ব্যাখ্যা সহ দেওয়া হয়েছে।" },
+      { question: "কত দিনে PDF পাবো?", answer: "পেমেন্ট সম্পন্ন হওয়ার সাথে সাথেই আপনার ইমেইলে ডাউনলোড লিংক পাঠানো হবে।" },
+      { question: "কোনো টাকা ফেরত নীতি আছে?", answer: "হ্যাঁ, ৭ দিনের মধ্যে সন্তুষ্ট না হলে সম্পূর্ণ টাকা ফেরত দেওয়া হবে।" },
+    ],
+  },
+  {
+    id: "2",
+    slug: "facebook-marketing-mastery",
+    title: "ফেসবুক মার্কেটিং মাস্টারি",
+    subtitle: "বাংলাদেশে Facebook দিয়ে বিক্রি বাড়ানোর গোপন কৌশল",
+    author: "নাফিসা ইসলাম",
+    cover: bookCover2,
+    price: 249,
+    originalPrice: 499,
+    rating: 4.8,
+    reviewCount: 218,
+    category: "ডিজিটাল মার্কেটিং",
+    tags: ["Facebook", "সোশ্যাল মিডিয়া", "বিজ্ঞাপন"],
+    featured: true,
+    bestSeller: true,
+    newRelease: false,
+    shortDescription: "Facebook Ads দিয়ে প্রতি টাকায় সর্বোচ্চ রিটার্ন পাওয়ার বাস্তব পদ্ধতি — যা বাংলাদেশের মার্কেটে কাজ করে।",
+    description: "বাংলাদেশের ডিজিটাল মার্কেটিং ল্যান্ডস্কেপে Facebook এখনো সবচেয়ে শক্তিশালী টুল। এই বইয়ে আপনি শিখবেন কীভাবে কম বাজেটে সঠিক অডিয়েন্সের কাছে পৌঁছে বিক্রি বাড়ানো যায়।",
+    outcomes: [
+      "১০০০ টাকায় Facebook Ad ক্যাম্পেইন চালিয়ে ১০,০০০+ টাকা আয় করুন",
+      "টার্গেটেড অডিয়েন্স তৈরি করে রিচ বাড়ান",
+      "Lookalike Audience দিয়ে নতুন কাস্টমার খুঁজুন",
+      "A/B Testing করে সেরা বিজ্ঞাপন বের করুন",
+      "Facebook Shop সেটআপ করে সরাসরি বিক্রি করুন",
+    ],
+    chapters: [
+      { title: "Facebook মার্কেটিং বেসিক্স", topics: ["পেজ অপ্টিমাইজেশন", "কন্টেন্ট স্ট্র্যাটেজি"] },
+      { title: "Ads ম্যানেজার মাস্টারি", topics: ["ক্যাম্পেইন স্ট্রাকচার", "বাজেটিং", "টার্গেটিং"] },
+      { title: "কনভার্সন অপ্টিমাইজেশন", topics: ["পিক্সেল সেটআপ", "রিটার্গেটিং", "রিপোর্টিং"] },
+    ],
+    suitableFor: ["ছোট ব্যবসার মালিক", "ডিজিটাল মার্কেটার", "উদ্যোক্তা"],
+    pages: 220,
+    format: "PDF",
+    language: "বাংলা",
+    publishedDate: "২০২৪",
+    reviews: [
+      { name: "আরিফ হোসেন", avatar: "A", rating: 5, text: "এই বই পড়ে আমার Facebook Ads ROI ৩০০% বেড়ে গেছে। অবিশ্বাস্য!", date: "ফেব্রুয়ারি ২০২৪", verified: true },
+      { name: "মারিয়াম আক্তার", avatar: "M", rating: 5, text: "A/B Testing সেকশনটা আমার ব্যবসা বদলে দিয়েছে। এখন বিজ্ঞাপনে আর টাকা নষ্ট হয় না।", date: "মার্চ ২০২৪", verified: true },
+    ],
+    faq: [
+      { question: "এই বই কি Beginner দের জন্য?", answer: "হ্যাঁ! একদম শুরু থেকে শেখানো হয়েছে। আগে কোনো Facebook Ads অভিজ্ঞতা না থাকলেও পারবেন।" },
+      { question: "বইটি কি আপডেট হয়?", answer: "হ্যাঁ, Facebook পরিবর্তনের সাথে সাথে বই আপডেট করা হয় এবং ক্রেতারা বিনামূল্যে আপডেট পাবেন।" },
+    ],
+  },
+  {
+    id: "3",
+    slug: "dropshipping-bangladesh-guide",
+    title: "ড্রপশিপিং বাংলাদেশ গাইড",
+    subtitle: "নিজের স্টক ছাড়াই কোটি টাকার ব্যবসা করুন",
+    author: "সাকিব আহসান",
+    cover: bookCover3,
+    price: 349,
+    originalPrice: 699,
+    rating: 4.7,
+    reviewCount: 156,
+    category: "ড্রপশিপিং",
+    tags: ["ড্রপশিপিং", "অটোমেশন", "স্কেলিং"],
+    featured: false,
+    bestSeller: false,
+    newRelease: true,
+    shortDescription: "বিনিয়োগ ছাড়াই শুরু করুন, স্টক ছাড়াই বিক্রি করুন — বাংলাদেশে ড্রপশিপিং ব্যবসার পূর্ণ গাইড।",
+    description: "ড্রপশিপিং হলো আজকের যুগের সবচেয়ে স্মার্ট ব্যবসায়িক মডেল। এই বইয়ে শিখুন কীভাবে নিজের গুদাম বা পণ্য ছাড়াই বাংলাদেশে সফল ড্রপশিপিং ব্যবসা চালাবেন।",
+    outcomes: [
+      "শূন্য ইনভেন্টরিতে অনলাইন ব্যবসা শুরু করুন",
+      "বিশ্বস্ত ড্রপশিপিং সাপ্লায়ার খুঁজুন",
+      "অর্ডার ফুলফিলমেন্ট অটোমেট করুন",
+      "প্রোডাক্ট প্রাইসিং কৌশল আয়ত্ত করুন",
+      "কাস্টমার রিটার্ন ও রিফান্ড ম্যানেজ করুন",
+    ],
+    chapters: [
+      { title: "ড্রপশিপিং বেসিক্স", topics: ["ব্যবসায়িক মডেল", "সুবিধা-অসুবিধা"] },
+      { title: "সাপ্লায়ার ম্যানেজমেন্ট", topics: ["সোর্সিং", "নেগোশিয়েশন", "QC"] },
+      { title: "স্কেলিং স্ট্র্যাটেজি", topics: ["অটোমেশন", "টিম বিল্ডিং", "মাল্টি-চ্যানেল"] },
+    ],
+    suitableFor: ["নতুন উদ্যোক্তা", "কম বাজেটের স্টার্টার", "অনলাইন ব্যবসায়ী"],
+    pages: 195,
+    format: "PDF",
+    language: "বাংলা",
+    publishedDate: "২০২৫",
+    reviews: [
+      { name: "জাহিদ রহমান", avatar: "J", rating: 5, text: "মাত্র ৫ হাজার টাকা দিয়ে শুরু করেছিলাম, এখন মাসে ৫০ হাজার আয়। সব ক্রেডিট এই বইকে।", date: "জানুয়ারি ২০২৫", verified: true },
+    ],
+    faq: [
+      { question: "ড্রপশিপিংয়ে কি প্রচুর পুঁজি লাগে?", answer: "না! মাত্র ৫,০০০-১০,০০০ টাকায় শুরু করা সম্ভব। এই বইয়ে সেটাই শেখানো হয়েছে।" },
+    ],
+  },
+  {
+    id: "4",
+    slug: "product-sourcing-secrets",
+    title: "প্রোডাক্ট সোর্সিং সিক্রেটস",
+    subtitle: "কম দামে ভালো পণ্য কোথায় পাবেন — সম্পূর্ণ গাইড",
+    author: "ফারহান আহমেদ",
+    cover: bookCover4,
+    price: 199,
+    originalPrice: 399,
+    rating: 4.6,
+    reviewCount: 98,
+    category: "সোর্সিং",
+    tags: ["সাপ্লায়ার", "চায়না সোর্সিং", "লোকাল সোর্সিং"],
+    featured: false,
+    bestSeller: false,
+    newRelease: true,
+    shortDescription: "China, India এবং বাংলাদেশ থেকে সেরা দামে পণ্য কিনুন এবং প্রতিযোগিতায় এগিয়ে থাকুন।",
+    description: "সঠিক সোর্সিং মানে মুনাফা বাড়ানো। এই বইয়ে শিখুন কোথায় খুঁজলে ভালো মানের পণ্য কম দামে পাবেন এবং কীভাবে সাপ্লায়ারের সাথে দর কষাকষি করবেন।",
+    outcomes: [
+      "Alibaba, AliExpress থেকে নিরাপদে পণ্য কিনুন",
+      "বাংলাদেশি মার্কেট থেকে পাইকারি সোর্স করুন",
+      "প্রোডাক্ট কোয়ালিটি চেক করুন",
+      "সাপ্লায়ারের সাথে দীর্ঘমেয়াদী সম্পর্ক তৈরি করুন",
+      "আমদানির নিয়ম-কানুন জানুন",
+    ],
+    chapters: [
+      { title: "সোর্সিং প্ল্যাটফর্ম", topics: ["Alibaba", "AliExpress", "লোকাল মার্কেট"] },
+      { title: "দর কষাকষি", topics: ["নেগোশিয়েশন ট্যাকটিক্স", "স্যাম্পল অর্ডার"] },
+    ],
+    suitableFor: ["ই-কমার্স সেলার", "পাইকারি ব্যবসায়ী", "আমদানিকারক"],
+    pages: 165,
+    format: "PDF",
+    language: "বাংলা",
+    publishedDate: "২০২৪",
+    reviews: [
+      { name: "কামাল হোসেন", avatar: "K", rating: 4, text: "Alibaba থেকে সোর্সিং করার ভয় ছিল, এই বই পড়ে সব ক্লিয়ার হয়ে গেছে।", date: "ডিসেম্বর ২০২৩", verified: true },
+    ],
+    faq: [
+      { question: "আমদানিতে কি অনেক ঝামেলা?", answer: "এই বইয়ে ধাপে ধাপে সব প্রক্রিয়া বর্ণনা করা আছে। আপনি সহজেই বুঝতে পারবেন।" },
+    ],
+  },
+  {
+    id: "5",
+    slug: "copywriting-bangla-business",
+    title: "কপিরাইটিং ফর বাংলাদেশ বিজনেস",
+    subtitle: "শব্দ দিয়ে বিক্রি করুন — বাংলায় পারসুয়েসিভ রাইটিং",
+    author: "নুসরাত জাহান",
+    cover: bookCover5,
+    price: 279,
+    originalPrice: 449,
+    rating: 4.8,
+    reviewCount: 134,
+    category: "কপিরাইটিং",
+    tags: ["কপিরাইটিং", "কন্টেন্ট", "সেলস"],
+    featured: true,
+    bestSeller: false,
+    newRelease: false,
+    shortDescription: "বাংলা ভাষায় এমন কপি লিখুন যা মানুষকে কিনতে বাধ্য করে — প্রোডাক্ট পেজ থেকে ফেসবুক পোস্ট পর্যন্ত।",
+    description: "ভালো পণ্যের সাথে ভালো কপি থাকলে বিক্রি বহুগুণ বাড়ে। এই বইয়ে শিখুন বাংলাদেশের বাজারে কার্যকর সেলস কপি কীভাবে লিখবেন।",
+    outcomes: [
+      "আকর্ষণীয় প্রোডাক্ট ডেসক্রিপশন লিখুন",
+      "Facebook এ ভাইরাল পোস্ট তৈরি করুন",
+      "ইমেইল মার্কেটিং কপি আয়ত্ত করুন",
+      "ল্যান্ডিং পেজ কপি দিয়ে কনভার্সন বাড়ান",
+      "CTA লেখার শিল্প রপ্ত করুন",
+    ],
+    chapters: [
+      { title: "কপিরাইটিং ফান্ডামেন্টালস", topics: ["AIDA ফর্মুলা", "পেইন পয়েন্ট"] },
+      { title: "বাংলায় সেলস রাইটিং", topics: ["ইমোশনাল ট্রিগার", "স্টোরিটেলিং"] },
+    ],
+    suitableFor: ["মার্কেটার", "উদ্যোক্তা", "কন্টেন্ট ক্রিয়েটর"],
+    pages: 210,
+    format: "PDF",
+    language: "বাংলা",
+    publishedDate: "২০২৪",
+    reviews: [
+      { name: "শিরিন আক্তার", avatar: "S", rating: 5, text: "আমার প্রোডাক্ট পেজ কপি বদলানোর পর সেল ৪০% বেড়েছে। অবিশ্বাস্য ফলাফল।", date: "মার্চ ২০২৪", verified: true },
+    ],
+    faq: [
+      { question: "লেখালেখির অভ্যাস না থাকলে কি পারব?", answer: "অবশ্যই! এই বইয়ে টেমপ্লেট ও ফর্মুলা দেওয়া আছে যা সরাসরি ব্যবহার করতে পারবেন।" },
+    ],
+  },
+  {
+    id: "6",
+    slug: "customer-service-excellence",
+    title: "কাস্টমার সার্ভিস এক্সেলেন্স",
+    subtitle: "বাংলাদেশের ই-কমার্সে কাস্টমার ধরে রাখার সিক্রেট",
+    author: "তানিয়া রহমান",
+    cover: bookCover6,
+    price: 179,
+    originalPrice: 349,
+    rating: 4.5,
+    reviewCount: 87,
+    category: "কাস্টমার সার্ভিস",
+    tags: ["কাস্টমার সার্ভিস", "রিটেনশন", "লয়্যালটি"],
+    featured: false,
+    bestSeller: false,
+    newRelease: false,
+    shortDescription: "একজন কাস্টমারকে ১০ জনের কাছে পাঠানোর শিল্প — বাংলাদেশের শীর্ষ ই-কমার্স ব্র্যান্ডের কাস্টমার সার্ভিস সিক্রেট।",
+    description: "নতুন কাস্টমার আনার চেয়ে পুরনো কাস্টমার ধরে রাখা ৫ গুণ সস্তা। এই বইয়ে শিখুন কীভাবে অসাধারণ কাস্টমার সার্ভিস দিয়ে ব্র্যান্ড লয়্যালটি তৈরি করবেন।",
+    outcomes: [
+      "কাস্টমার কমপ্লেইন হ্যান্ডেল করার মাস্টার হোন",
+      "রিভিউ ও রেটিং বাড়ানোর কৌশল শিখুন",
+      "পুরনো কাস্টমারকে বারবার কিনতে উৎসাহিত করুন",
+      "নেগেটিভ ফিডব্যাককে সুযোগে পরিণত করুন",
+    ],
+    chapters: [
+      { title: "কাস্টমার সাইকোলজি", topics: ["কাস্টমার এক্সপেকটেশন", "এমোশনাল কানেকশন"] },
+      { title: "সার্ভিস সিস্টেম", topics: ["SOP তৈরি", "টিম ট্রেনিং"] },
+    ],
+    suitableFor: ["ই-কমার্স উদ্যোক্তা", "কাস্টমার সার্ভিস টিম", "ব্যবসায়ী"],
+    pages: 148,
+    format: "PDF",
+    language: "বাংলা",
+    publishedDate: "২০২৩",
+    reviews: [
+      { name: "রনি বিশ্বাস", avatar: "R", rating: 5, text: "কাস্টমার রিটেনশন রেট ৬০% বেড়েছে এই বইয়ের কৌশল প্রয়োগ করে।", date: "নভেম্বর ২০২৩", verified: true },
+    ],
+    faq: [
+      { question: "একা ব্যবসা করলেও কাজে লাগবে?", answer: "হ্যাঁ, একক উদ্যোক্তাদের জন্য বিশেষভাবে কৌশল দেওয়া আছে।" },
+    ],
+  },
+];
+
+export const categories = ["সব বই", "ই-কমার্স", "ডিজিটাল মার্কেটিং", "ড্রপশিপিং", "সোর্সিং", "কপিরাইটিং", "কাস্টমার সার্ভিস"];
