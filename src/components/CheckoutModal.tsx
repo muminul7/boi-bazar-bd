@@ -13,12 +13,10 @@ interface CheckoutModalProps {
   book: Book;
 }
 
-type PaymentMethod = "sslcommerz" | "bkash" | "nagad";
+type PaymentMethod = "paystation";
 
 const paymentMethods: { id: PaymentMethod; label: string; desc: string; emoji: string }[] = [
-  { id: "sslcommerz", label: "কার্ড / নেট ব্যাংকিং", desc: "Visa, Mastercard, সব ব্যাংক", emoji: "💳" },
-  { id: "bkash", label: "বিকাশ", desc: "মোবাইল ব্যাংকিং", emoji: "📱" },
-  { id: "nagad", label: "নগদ", desc: "মোবাইল ব্যাংকিং", emoji: "💰" },
+  { id: "paystation", label: "PayStation", desc: "কার্ড, বিকাশ, নগদ, রকেট সব সাপোর্ট", emoji: "💳" },
 ];
 
 export default function CheckoutModal({ open, onClose, book }: CheckoutModalProps) {
