@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, X, BookOpen, ShoppingBag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 
 const navLinks = [
   { href: "/", label: "হোম" },
@@ -12,15 +13,31 @@ const navLinks = [
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "site_logo_url")
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data?.value) setLogoUrl(data.value);
+      });
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 border-b border-border/60 bg-card/95 backdrop-blur-md shadow-brand-sm">
       <div className="container mx-auto flex h-16 items-center justify-between">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary group-hover:bg-primary-light transition-colors">
-            <BookOpen className="h-5 w-5 text-primary-foreground" />
-          </div>
+          {logoUrl ? (
+            <img src={logoUrl} alt="Boi Bazar" className="h-9 w-9 rounded-xl object-contain" />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary group-hover:bg-primary-light transition-colors">
+              <BookOpen className="h-5 w-5 text-primary-foreground" />
+            </div>
+          )}
           <div className="flex flex-col leading-none">
             <span className="text-lg font-bold text-foreground font-bengali tracking-tight">Boi Bazar</span>
             <span className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">Book Store</span>
