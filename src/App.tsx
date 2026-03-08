@@ -24,7 +24,11 @@ const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminSubscribers = lazy(() => import("./pages/admin/AdminSubscribers"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminMessages = lazy(() => import("./pages/admin/AdminMessages"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 
 const queryClient = new QueryClient();
 
