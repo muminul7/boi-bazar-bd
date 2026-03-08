@@ -317,7 +317,7 @@ export default function HomePage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
             <Heart className="h-6 w-6 text-secondary-foreground animate-pulse" />
             <p className="font-bengali font-semibold text-secondary-foreground text-lg">
-              <span className="font-body">৫,০০০+</span> উদ্যোক্তা ইতোমধ্যে তাদের ব্যবসা বদলে ফেলেছেন Boi Bazar-এর সাথে
+              আপনার জ্ঞানের যাত্রা শুরু হোক আজই
             </p>
           </div>
         </div>
