@@ -122,6 +122,7 @@ export default function HomePage() {
                     বই দেখুন <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
+              </motion.div>
 
               {/* Trust stats */}
               <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center gap-6 lg:gap-10">
