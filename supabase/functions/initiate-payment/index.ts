@@ -12,34 +12,83 @@ serve(async (req) => {
   }
 
   try {
-    const { bookId, bookTitle, customerName, customerEmail, customerPhone, billingAddress, couponCode, amount, discount } = await req.json();
+    const { bookId, customerName, customerEmail, customerPhone, billingAddress, couponCode } = await req.json();
 
-    if (!customerName || !customerEmail || !amount) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    if (!customerName || !customerEmail || !bookId) {
+      return new Response(JSON.stringify({ error: "Missing required fields: bookId, customerName, customerEmail" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Create order in DB
+    // --- SERVER-SIDE PRICE VALIDATION ---
+    // Fetch the real book price from the database
+    const { data: book, error: bookError } = await supabase
+      .from("books")
+      .select("id, title, price, original_price, active")
+      .eq("id", bookId)
+      .single();
+
+    if (bookError || !book) {
+      return new Response(JSON.stringify({ error: "Book not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    if (book.active === false) {
+      return new Response(JSON.stringify({ error: "This book is currently unavailable" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    let finalAmount = book.price;
+    let appliedDiscount = 0;
+
+    // --- SERVER-SIDE COUPON VALIDATION ---
+    if (couponCode) {
+      const { data: coupon } = await supabase
+        .from("coupons")
+        .select("*")
+        .eq("code", couponCode)
+        .eq("active", true)
+        .single();
+
+      if (coupon) {
+        // Check expiry
+        const isExpired = coupon.expires_at && new Date(coupon.expires_at) < new Date();
+        // Check usage limit
+        const isMaxedOut = coupon.max_uses && (coupon.used_count || 0) >= coupon.max_uses;
+
+        if (!isExpired && !isMaxedOut) {
+          if (coupon.discount_type === "percentage") {
+            appliedDiscount = Math.round((book.price * coupon.discount_value) / 100);
+          } else {
+            appliedDiscount = coupon.discount_value;
+          }
+          // Ensure discount doesn't exceed price
+          appliedDiscount = Math.min(appliedDiscount, book.price);
+          finalAmount = book.price - appliedDiscount;
+        }
+      }
+      // If coupon is invalid, we proceed without discount (no error, just ignore)
+    }
+
+    // Ensure minimum amount of 1 BDT
+    if (finalAmount < 1) {
+      finalAmount = 1;
+    }
+
+    // Create order in DB with server-computed amount
     const downloadToken = crypto.randomUUID();
     const downloadExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
     const invoiceNumber = `EK-${Date.now()}`;
 
-    // Check if bookId is a valid UUID (DB book) or static ID
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const isDbBook = bookId && uuidRegex.test(bookId);
-
     const { data: order, error: orderError } = await supabase.from("orders").insert({
-      book_id: isDbBook ? bookId : null,
+      book_id: bookId,
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone || null,
       billing_address: billingAddress || null,
       coupon_code: couponCode || null,
-      amount,
-      discount: discount || 0,
+      amount: finalAmount,
+      discount: appliedDiscount,
       payment_status: "pending",
       download_token: downloadToken,
       download_expires_at: downloadExpiresAt,
@@ -56,13 +105,10 @@ serve(async (req) => {
     const password = Deno.env.get("PAYSTATION_PASSWORD");
 
     if (!merchantId || !password) {
-      return new Response(JSON.stringify({ error: "Payment gateway not configured. Set PAYSTATION_MERCHANT_ID and PAYSTATION_PASSWORD in secrets." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Payment gateway not configured." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Get the origin for callback redirect
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
-
-    // Store origin in opt_a for callback redirect
     const callbackUrl = `${supabaseUrl}/functions/v1/payment-webhook`;
 
     // PayStation initiate-payment API
@@ -71,15 +117,15 @@ serve(async (req) => {
     formData.append("password", password);
     formData.append("invoice_number", invoiceNumber);
     formData.append("currency", "BDT");
-    formData.append("payment_amount", amount.toString());
+    formData.append("payment_amount", finalAmount.toString());
     formData.append("reference", `Order: ${order.id}`);
     formData.append("cust_name", customerName);
     formData.append("cust_phone", customerPhone || "01700000000");
     formData.append("cust_email", customerEmail);
     formData.append("cust_address", billingAddress || "Bangladesh");
     formData.append("callback_url", callbackUrl);
-    formData.append("checkout_items", JSON.stringify({ book: bookTitle || "eBook", orderId: order.id }));
-    formData.append("opt_a", origin); // Store origin for redirect after callback
+    formData.append("checkout_items", JSON.stringify({ book: book.title, orderId: order.id }));
+    formData.append("opt_a", origin);
 
     const payRes = await fetch("https://api.paystation.com.bd/initiate-payment", {
       method: "POST",
