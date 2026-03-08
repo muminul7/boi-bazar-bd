@@ -53,7 +53,7 @@ export default function AdminLogin() {
             <BookOpen className="h-6 w-6 text-primary-foreground" />
           </div>
           <CardTitle className="font-bengali text-2xl">অ্যাডমিন লগইন</CardTitle>
-          <CardDescription className="font-bengali">একিতাব ড্যাশবোর্ডে প্রবেশ করুন</CardDescription>
+          <CardDescription className="font-bengali">Boi Bazar ড্যাশবোর্ডে প্রবেশ করুন</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
