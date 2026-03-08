@@ -3,7 +3,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   try {
-    // PayStation sends callback as URL params (GET redirect)
     const url = new URL(req.url);
     const status = url.searchParams.get("status");
     const invoiceNumber = url.searchParams.get("invoice_number");
@@ -19,7 +18,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Find order by invoice number (stored in transaction_id)
+    // Find order by invoice number
     const { data: order } = await supabase
       .from("orders")
       .select("*")
@@ -31,30 +30,74 @@ serve(async (req) => {
       return new Response("Order not found", { status: 404 });
     }
 
-    // Get origin from checkout_items or use default
-    let origin = "";
+    // Prevent duplicate processing - if already paid, just redirect
+    if (order.payment_status === "paid") {
+      const origin = "https://boi-bazar-bd.lovable.app";
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=success` },
+      });
+    }
+
+    const origin = "https://boi-bazar-bd.lovable.app";
 
     if (status === "Successful") {
-      // Optionally verify with PayStation transaction-status API
+      // --- MANDATORY PayStation verification ---
       const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
-      if (merchantId) {
-        try {
-          const verifyRes = await fetch("https://api.paystation.com.bd/transaction-status", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "merchantId": merchantId,
-            },
-            body: JSON.stringify({ invoice_number: invoiceNumber }),
-          });
-          const verifyData = await verifyRes.json();
-          console.log("PayStation verify:", verifyData);
-        } catch (e) {
-          console.error("Verification error:", e);
-        }
+      const password = Deno.env.get("PAYSTATION_PASSWORD");
+
+      if (!merchantId || !password) {
+        console.error("PayStation credentials missing, cannot verify payment");
+        await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=failed` },
+        });
       }
 
-      // Update order as paid
+      // Verify the transaction with PayStation
+      let verified = false;
+      try {
+        const verifyRes = await fetch("https://api.paystation.com.bd/transaction-status", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "merchantId": merchantId,
+          },
+          body: JSON.stringify({ invoice_number: invoiceNumber }),
+        });
+        const verifyData = await verifyRes.json();
+        console.log("PayStation verify response:", verifyData);
+
+        // Only mark as paid if PayStation confirms the transaction is successful
+        // and the amount matches what we expect
+        if (
+          verifyData.status_code === "200" ||
+          verifyData.status === "Successful" ||
+          verifyData.status === "success"
+        ) {
+          // Verify the amount matches to prevent partial payment fraud
+          const verifiedAmount = parseFloat(verifyData.amount || verifyData.payment_amount || "0");
+          if (verifiedAmount > 0 && Math.abs(verifiedAmount - order.amount) <= 1) {
+            verified = true;
+          } else {
+            console.error("Amount mismatch!", { expected: order.amount, received: verifiedAmount });
+          }
+        }
+      } catch (e) {
+        console.error("PayStation verification failed:", e);
+      }
+
+      if (!verified) {
+        console.error("Payment verification FAILED for invoice:", invoiceNumber);
+        await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=failed` },
+        });
+      }
+
+      // Verification passed — mark as paid
       await supabase.from("orders").update({
         payment_status: "paid",
         transaction_id: trxId || invoiceNumber,
@@ -91,9 +134,6 @@ serve(async (req) => {
         console.error("Delivery email error:", emailErr);
       }
 
-      // Redirect to success page
-      origin = "https://boi-bazar-bd.lovable.app";
-
       return new Response(null, {
         status: 302,
         headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=success` },
@@ -105,8 +145,6 @@ serve(async (req) => {
     await supabase.from("orders").update({
       payment_status: paymentStatus,
     }).eq("id", order.id);
-
-    origin = "https://boi-bazar-bd.lovable.app";
 
     return new Response(null, {
       status: 302,
