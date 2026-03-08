@@ -50,120 +50,93 @@ export default function HomePage() {
     <div className="min-h-screen overflow-hidden">
       {/* ─── HERO ─── */}
       <section className="relative overflow-hidden bg-gradient-hero min-h-[90vh] flex items-center">
-        {/* Animated background shapes */}
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(hsl(0,0%,100%) 1px, transparent 1px), linear-gradient(90deg, hsl(0,0%,100%) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+        
+        {/* Glow orbs */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 h-[500px] w-[500px] rounded-full opacity-[0.07]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
-          <div className="absolute top-1/2 -left-32 h-[400px] w-[400px] rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, hsl(174, 65%, 60%), transparent 70%)" }} />
-          <div className="absolute -bottom-20 right-1/3 h-[300px] w-[300px] rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, hsl(0, 0%, 100%), transparent 70%)" }} />
+          <div className="absolute top-1/4 left-1/4 h-[600px] w-[600px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 60%)" }} />
+          <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, hsl(174, 65%, 60%), transparent 60%)" }} />
         </div>
 
-        <div className="container mx-auto py-20 lg:py-28 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
-            {/* Text */}
-            <motion.div initial="hidden" animate="visible" variants={stagger} className="text-primary-foreground">
-              <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-6 rounded-full px-5 py-2 text-sm font-bengali glass">
+        <div className="container mx-auto py-20 lg:py-32 relative z-10">
+          <div className="max-w-5xl mx-auto text-center text-primary-foreground">
+            <motion.div initial="hidden" animate="visible" variants={stagger}>
+              
+              {/* Badge */}
+              <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-8 rounded-full px-5 py-2.5 text-sm font-bengali glass">
                 <Sparkles className="h-4 w-4 text-gold" />
                 <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
 
-              <motion.h1 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl xl:text-5xl font-bold font-bengali leading-[1.35] mb-6">
-                <span className="block mb-2 opacity-90">যে শেখা বন্ধ করে,</span>
-                <span className="block mb-3 opacity-90">সে পিছিয়ে পড়ে।</span>
-                <span className="relative inline-block mt-1">
-                  <span className="text-gradient-gold text-[1.1em]">যে শেখা চালিয়ে যায়,</span>
+              {/* Headline - dramatic two-part layout */}
+              <motion.h1 variants={fadeUp} custom={1} className="font-bold font-bengali mb-8">
+                <span className="block text-3xl md:text-4xl lg:text-5xl xl:text-[3.25rem] leading-tight opacity-90 mb-4">
+                  যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।
                 </span>
-                <br />
                 <span className="relative inline-block">
-                  <span className="text-gradient-gold text-[1.1em]">সে এগিয়ে যায়।</span>
-                  <svg className="absolute -bottom-1.5 left-0 w-full" viewBox="0 0 200 8" fill="none">
-                    <path d="M1 5.5C40 2 80 1 100 3C120 5 160 6 199 2.5" stroke="hsl(39, 88%, 52%)" strokeWidth="2.5" strokeLinecap="round" />
-                  </svg>
+                  <span className="block text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-gradient-gold leading-tight font-extrabold">
+                    যে শেখা চালিয়ে যায়,
+                  </span>
+                </span>
+                <span className="relative inline-block mt-1">
+                  <span className="block text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-gradient-gold leading-tight font-extrabold">
+                    সে এগিয়ে যায়।
+                  </span>
+                  <motion.svg 
+                    initial={{ pathLength: 0, opacity: 0 }} 
+                    animate={{ pathLength: 1, opacity: 1 }} 
+                    transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
+                    className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 10" fill="none"
+                  >
+                    <motion.path 
+                      d="M2 7C50 3 100 2 150 4C200 6 250 5 298 3" 
+                      stroke="hsl(39, 88%, 52%)" 
+                      strokeWidth="3" 
+                      strokeLinecap="round"
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
+                    />
+                  </motion.svg>
                 </span>
               </motion.h1>
 
-              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-8 opacity-85">
+              {/* Subheadline */}
+              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl mx-auto">
                 মার্কেটিং, বিজনেস অটোমেশন, AI, স্কেলিং — সব ধরনের উদ্যোক্তাদের জন্য তৈরি প্র্যাকটিক্যাল গাইড।
               </motion.p>
 
-              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-3">
+              {/* CTAs */}
+              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
                 <Link to="/books">
-                  <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-8 py-6 rounded-xl">
+                  <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-10 py-6 rounded-xl">
                     বই দেখুন <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
                 <a href="#how-it-works">
-                  <Button size="lg" variant="outline" className="font-bengali text-base glass border-white/20 hover:bg-white/15 px-8 py-6 rounded-xl" style={{ color: "hsl(0, 0%, 100%)" }}>
+                  <Button size="lg" variant="outline" className="font-bengali text-base glass border-white/20 hover:bg-white/15 px-10 py-6 rounded-xl" style={{ color: "hsl(0, 0%, 100%)" }}>
                     কিভাবে কাজ করে?
                   </Button>
                 </a>
               </motion.div>
 
-              {/* Mini trust badges */}
-              <motion.div variants={fadeUp} custom={4} className="mt-12 flex flex-wrap gap-8">
-                {stats.slice(0, 3).map((s) => (
+              {/* Trust stats - horizontal */}
+              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center gap-6 lg:gap-12">
+                {stats.slice(0, 3).map((s, i) => (
                   <div key={s.label} className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-xl glass flex items-center justify-center">
+                    <div className="h-11 w-11 rounded-xl glass flex items-center justify-center">
                       <s.icon className="h-5 w-5 text-gold" />
                     </div>
-                    <div>
+                    <div className="text-left">
                       <div className="text-xl font-bold font-body text-gold">{s.value}</div>
                       <div className="text-xs font-bengali opacity-70">{s.label}</div>
                     </div>
+                    {i < 2 && <div className="hidden lg:block h-8 w-px bg-white/15 ml-6" />}
                   </div>
                 ))}
               </motion.div>
-            </motion.div>
 
-            {/* Illustration */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, x: 40 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-              className="relative hidden lg:block"
-            >
-              <div className="relative">
-                {/* Glow behind image */}
-                <div className="absolute inset-0 rounded-3xl" style={{ background: "radial-gradient(circle at center, hsl(39, 88%, 52%, 0.15), transparent 70%)", transform: "scale(1.1)" }} />
-                <div className="rounded-3xl overflow-hidden shadow-brand-xl border-2 border-white/10">
-                  <img src={heroIllustration} alt="Bengali ecommerce entrepreneur" className="w-full h-auto" />
-                </div>
-              </div>
-
-              {/* Floating card - Rating */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.8, duration: 0.5 }}
-                className="absolute -bottom-6 -left-8 bg-card rounded-2xl p-4 shadow-brand-xl border border-border"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-secondary/15 flex items-center justify-center">
-                    <Star className="h-6 w-6 text-gold fill-current" />
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold font-body text-foreground">৪.৯/৫</div>
-                    <div className="text-xs text-muted-foreground font-bengali">৫০০+ রিভিউ</div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Floating card - Downloads */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1, duration: 0.5 }}
-                className="absolute -top-4 -right-6 bg-card rounded-2xl p-4 shadow-brand-xl border border-border"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-xl bg-primary/15 flex items-center justify-center">
-                    <Download className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <div className="text-lg font-bold font-body text-foreground">৫,০০০+</div>
-                    <div className="text-xs text-muted-foreground font-bengali">সব ধরনের উদ্যোক্তাদের জন্য</div>
-                  </div>
-                </div>
-              </motion.div>
             </motion.div>
           </div>
         </div>
