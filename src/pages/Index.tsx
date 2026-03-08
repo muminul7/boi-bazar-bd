@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, CheckCircle, Star, Shield, Zap, TrendingUp, Users, Sparkles, Download, Heart, Quote } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle, Star, Shield, Zap, TrendingUp, Users, Sparkles, Download, Heart, Quote, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { books, categories } from "@/data/books";
 import BookCard from "@/components/BookCard";
 import heroIllustration from "@/assets/hero-illustration.jpg";
 import { motion, type Variants } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
