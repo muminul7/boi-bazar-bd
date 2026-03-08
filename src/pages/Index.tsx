@@ -51,12 +51,19 @@ export default function HomePage() {
       {/* ─── HERO ─── */}
       <section className="relative overflow-hidden bg-gradient-hero min-h-[90vh] flex items-center">
         {/* Subtle grid pattern */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "linear-gradient(hsl(0,0%,100%) 1px, transparent 1px), linear-gradient(90deg, hsl(0,0%,100%) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
+        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(hsl(0,0%,100%) 1px, transparent 1px), linear-gradient(90deg, hsl(0,0%,100%) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
+        
+        {/* Diagonal lines texture */}
+        <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: "repeating-linear-gradient(45deg, hsl(0,0%,100%) 0, hsl(0,0%,100%) 1px, transparent 1px, transparent 30px)" }} />
+
+        {/* Dot pattern */}
+        <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(0,0%,100%) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
         
         {/* Glow orbs */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 h-[600px] w-[600px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 60%)" }} />
-          <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, hsl(174, 65%, 60%), transparent 60%)" }} />
+          <div className="absolute top-1/4 left-1/4 h-[600px] w-[600px] rounded-full opacity-[0.1]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 60%)" }} />
+          <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, hsl(174, 65%, 60%), transparent 60%)" }} />
+          <div className="absolute top-0 right-1/3 h-[400px] w-[400px] rounded-full opacity-[0.05]" style={{ background: "radial-gradient(circle, hsl(39, 70%, 70%), transparent 60%)" }} />
         </div>
 
         <div className="container mx-auto py-20 lg:py-28 relative z-10">
