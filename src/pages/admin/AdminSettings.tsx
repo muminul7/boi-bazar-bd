@@ -90,6 +90,22 @@ export default function AdminSettings() {
     }
   };
 
+  const handleSavePayment = async () => {
+    setSavingPayment(true);
+    try {
+      for (const [key, value] of Object.entries(paymentConfig)) {
+        await supabase
+          .from("secure_settings" as any)
+          .upsert({ key, value, updated_at: new Date().toISOString() } as any, { onConflict: "key" });
+      }
+      toast({ title: "পেমেন্ট সেটিংস সেভ হয়েছে ✓" });
+    } catch (err: any) {
+      toast({ title: "ত্রুটি", description: err.message, variant: "destructive" });
+    } finally {
+      setSavingPayment(false);
+    }
+  };
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
