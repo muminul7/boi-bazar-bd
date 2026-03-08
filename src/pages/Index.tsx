@@ -60,9 +60,9 @@ export default function HomePage() {
         </div>
 
         <div className="container mx-auto py-20 lg:py-28 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center text-primary-foreground">
+          <div className="flex flex-col items-center text-primary-foreground max-w-3xl mx-auto">
             {/* Left: Text content */}
-            <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center lg:text-left">
+            <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center">
               
               {/* Badge */}
               <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-8 rounded-full px-5 py-2.5 text-sm font-bengali glass">
@@ -104,12 +104,12 @@ export default function HomePage() {
               </motion.h1>
 
               {/* Subheadline */}
-              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl mx-auto lg:mx-0 lg:max-w-none">
+              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl mx-auto">
                 মার্কেটিং, বিজনেস অটোমেশন, AI, স্কেলিং — সব ধরনের উদ্যোক্তাদের জন্য তৈরি প্র্যাকটিক্যাল গাইড।
               </motion.p>
 
               {/* CTAs */}
-              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-14">
+              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
                 <Link to="/books">
                   <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-10 py-6 rounded-xl">
                     বই দেখুন <ArrowRight className="h-5 w-5" />
@@ -123,7 +123,7 @@ export default function HomePage() {
               </motion.div>
 
               {/* Trust stats */}
-              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-10">
+              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center gap-6 lg:gap-10">
                 {stats.slice(0, 3).map((s, i) => (
                   <div key={s.label} className="flex items-center gap-3">
                     <div className="h-11 w-11 rounded-xl glass flex items-center justify-center">
@@ -140,32 +140,6 @@ export default function HomePage() {
 
             </motion.div>
 
-            {/* Right: Hero Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 40, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              className="relative hidden lg:flex items-center justify-center"
-            >
-              <div className="relative">
-                {/* Glow behind image */}
-                <div className="absolute -inset-6 rounded-3xl opacity-30" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
-                <img
-                  src={heroIllustration}
-                  alt="eKitab — বাংলা ইবুক প্ল্যাটফর্ম"
-                  className="relative rounded-2xl shadow-brand-xl w-full max-w-md object-cover border-2 border-white/10"
-                />
-                {/* Floating badge */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-4 -left-4 glass rounded-xl px-4 py-3 flex items-center gap-2"
-                >
-                  <Star className="h-5 w-5 text-gold fill-gold" />
-                  <span className="font-bengali text-sm font-semibold">৯৮% সন্তুষ্ট পাঠক</span>
-                </motion.div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </section>
