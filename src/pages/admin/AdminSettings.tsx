@@ -48,20 +48,29 @@ export default function AdminSettings() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      const { data } = await supabase.from("site_settings").select("key, value");
-      if (data) {
+    const fetchAll = async () => {
+      const [settingsRes, secureRes] = await Promise.all([
+        supabase.from("site_settings").select("key, value"),
+        supabase.from("secure_settings" as any).select("key, value"),
+      ]);
+      if (settingsRes.data) {
         const map = { ...defaultSettings };
-        data.forEach((row: any) => {
-          if (row.key in map) {
-            (map as any)[row.key] = row.value || "";
-          }
+        settingsRes.data.forEach((row: any) => {
+          if (row.key in map) (map as any)[row.key] = row.value || "";
         });
         setSettings(map);
       }
+      if (secureRes.data) {
+        const pc = { paystation_merchant_id: "", paystation_password: "" };
+        (secureRes.data as any[]).forEach((row: any) => {
+          if (row.key === "paystation_merchant_id") pc.paystation_merchant_id = row.value || "";
+          if (row.key === "paystation_password") pc.paystation_password = row.value || "";
+        });
+        setPaymentConfig(pc);
+      }
       setLoading(false);
     };
-    fetchSettings();
+    fetchAll();
   }, []);
 
   const handleSave = async () => {
