@@ -17,6 +17,8 @@ interface SettingsMap {
   contact_email: string;
   contact_phone: string;
   facebook_url: string;
+  youtube_url: string;
+  instagram_url: string;
   site_logo_url: string;
 }
 
