@@ -19,6 +19,7 @@ const items = [
   { title: "ড্যাশবোর্ড", url: "/admin", icon: LayoutDashboard },
   { title: "বই ম্যানেজমেন্ট", url: "/admin/books", icon: BookOpen },
   { title: "রিভিউ", url: "/admin/reviews", icon: MessageSquare },
+  { title: "টেস্টিমোনিয়াল", url: "/admin/testimonials", icon: Quote },
   { title: "অর্ডার", url: "/admin/orders", icon: ShoppingCart },
   { title: "কুপন", url: "/admin/coupons", icon: Tag },
   { title: "সাবস্ক্রাইবার", url: "/admin/subscribers", icon: Mail },
