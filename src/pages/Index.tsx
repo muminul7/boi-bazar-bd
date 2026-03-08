@@ -109,7 +109,7 @@ export default function HomePage() {
               </motion.p>
 
               {/* CTAs */}
-              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-14">
+              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
                 <Link to="/books">
                   <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-10 py-6 rounded-xl">
                     বই দেখুন <ArrowRight className="h-5 w-5" />
