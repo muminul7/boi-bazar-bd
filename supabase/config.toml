@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.payment-success]
 verify_jwt = false
+
+[functions.send-delivery-email]
+verify_jwt = false
+
+[functions.download-ebook]
+verify_jwt = false

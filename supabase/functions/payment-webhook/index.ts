@@ -75,14 +75,23 @@ serve(async (req) => {
         }
       }
 
-      // Redirect to success page
-      // Try to find origin - check if it was stored
-      const possibleOrigins = [
-        req.headers.get("referer"),
-        req.headers.get("origin"),
-      ].filter(Boolean);
+      // Send delivery email
+      try {
+        const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-delivery-email`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${supabaseServiceKey}`,
+          },
+          body: JSON.stringify({ orderId: order.id }),
+        });
+        const emailData = await emailRes.json();
+        console.log("Delivery email result:", emailData);
+      } catch (emailErr) {
+        console.error("Delivery email error:", emailErr);
+      }
 
-      // Use published URL or preview URL
+      // Redirect to success page
       origin = "https://boi-bazar-bd.lovable.app";
 
       return new Response(null, {
