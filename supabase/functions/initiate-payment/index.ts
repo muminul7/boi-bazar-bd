@@ -3,7 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
 serve(async (req) => {
@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { bookId, customerName, customerEmail, customerPhone, billingAddress, couponCode, amount, discount } = await req.json();
+    const { bookId, bookTitle, customerName, customerEmail, customerPhone, billingAddress, couponCode, amount, discount } = await req.json();
 
     if (!bookId || !customerName || !customerEmail || !amount) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -26,8 +26,12 @@ serve(async (req) => {
     const downloadToken = crypto.randomUUID();
     const downloadExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(); // 48 hours
 
+    // Check if bookId is a valid UUID (DB book) or static ID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isDbBook = uuidRegex.test(bookId);
+
     const { data: order, error: orderError } = await supabase.from("orders").insert({
-      book_id: bookId,
+      book_id: isDbBook ? bookId : null,
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone || null,
@@ -46,8 +50,8 @@ serve(async (req) => {
     }
 
     // SSLCommerz sandbox credentials from secrets
-    const storeId = Deno.env.get("SSLCOMMERZ_STORE_ID") || "testp6aborjane67b4";
-    const storePass = Deno.env.get("SSLCOMMERZ_STORE_PASSWORD") || "testp6@borjane67b4";
+    const storeId = Deno.env.get("SSLCOMMERZ_STORE_ID") || "testbox";
+    const storePass = Deno.env.get("SSLCOMMERZ_STORE_PASSWORD") || "qwerty";
     const isSandbox = Deno.env.get("SSLCOMMERZ_SANDBOX") !== "false";
 
     const baseUrl = isSandbox
