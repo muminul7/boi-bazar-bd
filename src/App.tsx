@@ -17,6 +17,7 @@ import AdminBooks from "./pages/admin/AdminBooks";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminCoupons from "./pages/admin/AdminCoupons";
 import AdminReviews from "./pages/admin/AdminReviews";
+import AdminSubscribers from "./pages/admin/AdminSubscribers";
 import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient();
