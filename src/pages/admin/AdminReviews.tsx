@@ -54,7 +54,7 @@ export default function AdminReviews() {
   useEffect(() => {
     if (selectedBookId) {
       const book = books.find((b) => b.id === selectedBookId);
-      const bookReviews = (book?.reviews as Review[] | null) || [];
+      const bookReviews = (book?.reviews as unknown as Review[] | null) || [];
       setReviews(bookReviews);
     } else {
       setReviews([]);
