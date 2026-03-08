@@ -1,19 +1,35 @@
 import { useState } from "react";
-import { Mail, Phone, MapPin, Send, MessageCircle } from "lucide-react";
+import { Mail, Phone, MapPin, Send, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function ContactPage() {
   const { toast } = useToast();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
+  const [sending, setSending] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    toast({ title: "বার্তা পাঠানো হয়েছে!", description: "আমরা শীঘ্রই যোগাযোগ করব।" });
-    setForm({ name: "", email: "", phone: "", message: "" });
+    setSending(true);
+    try {
+      const { error } = await supabase.from("contact_messages" as any).insert({
+        name: form.name,
+        email: form.email,
+        phone: form.phone || null,
+        message: form.message,
+      });
+      if (error) throw error;
+      toast({ title: "বার্তা পাঠানো হয়েছে! ✓", description: "আমরা শীঘ্রই যোগাযোগ করব।" });
+      setForm({ name: "", email: "", phone: "", message: "" });
+    } catch {
+      toast({ title: "সমস্যা হয়েছে", description: "অনুগ্রহ করে আবার চেষ্টা করুন।", variant: "destructive" });
+    } finally {
+      setSending(false);
+    }
   };
 
   return (
