@@ -31,6 +31,8 @@ const defaultSettings: SettingsMap = {
   contact_email: "",
   contact_phone: "",
   facebook_url: "",
+  youtube_url: "",
+  instagram_url: "",
   site_logo_url: "",
 };
 
