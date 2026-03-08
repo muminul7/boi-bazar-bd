@@ -23,6 +23,7 @@ const items = [
   { title: "অর্ডার", url: "/admin/orders", icon: ShoppingCart },
   { title: "কুপন", url: "/admin/coupons", icon: Tag },
   { title: "সাবস্ক্রাইবার", url: "/admin/subscribers", icon: Mail },
+  { title: "বার্তা", url: "/admin/messages", icon: MessageCircle },
   { title: "সেটিংস", url: "/admin/settings", icon: Settings },
 ];
 
