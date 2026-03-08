@@ -100,21 +100,9 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Failed to create order" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // PayStation credentials: try secure_settings first, fallback to env
-    let merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
-    let password = Deno.env.get("PAYSTATION_PASSWORD");
-
-    const { data: secSettings } = await supabase
-      .from("secure_settings")
-      .select("key, value")
-      .in("key", ["paystation_merchant_id", "paystation_password"]);
-
-    if (secSettings) {
-      for (const row of secSettings) {
-        if (row.key === "paystation_merchant_id" && row.value) merchantId = row.value;
-        if (row.key === "paystation_password" && row.value) password = row.value;
-      }
-    }
+    // PayStation credentials from secrets
+    const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
+    const password = Deno.env.get("PAYSTATION_PASSWORD");
 
     if (!merchantId || !password) {
       return new Response(JSON.stringify({ error: "Payment gateway not configured." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });

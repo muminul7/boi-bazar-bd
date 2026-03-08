@@ -69,22 +69,10 @@ serve(async (req) => {
 
     if (status === "Successful") {
       // --- MANDATORY PayStation verification ---
-      let merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
-      let password2 = Deno.env.get("PAYSTATION_PASSWORD");
+      const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
+      const password = Deno.env.get("PAYSTATION_PASSWORD");
 
-      const { data: secSettings } = await supabase
-        .from("secure_settings")
-        .select("key, value")
-        .in("key", ["paystation_merchant_id", "paystation_password"]);
-
-      if (secSettings) {
-        for (const row of secSettings) {
-          if (row.key === "paystation_merchant_id" && row.value) merchantId = row.value;
-          if (row.key === "paystation_password" && row.value) password2 = row.value;
-        }
-      }
-
-      if (!merchantId || !password2) {
+      if (!merchantId || !password) {
         console.error("PayStation credentials missing, cannot verify payment");
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return new Response(null, {

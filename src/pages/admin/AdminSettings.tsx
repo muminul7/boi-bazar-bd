@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings, Facebook, Save, Loader2, Globe, Code, ImageIcon, Upload, X, CreditCard, Eye, EyeOff } from "lucide-react";
+import { Settings, Facebook, Save, Loader2, Globe, Code, ImageIcon, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -41,36 +41,24 @@ export default function AdminSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [paymentConfig, setPaymentConfig] = useState({ paystation_merchant_id: "", paystation_password: "" });
-  const [showPassword, setShowPassword] = useState(false);
-  const [savingPayment, setSavingPayment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    const fetchAll = async () => {
-      const [settingsRes, secureRes] = await Promise.all([
-        supabase.from("site_settings").select("key, value"),
-        supabase.from("secure_settings" as any).select("key, value"),
-      ]);
-      if (settingsRes.data) {
+    const fetchSettings = async () => {
+      const { data } = await supabase.from("site_settings").select("key, value");
+      if (data) {
         const map = { ...defaultSettings };
-        settingsRes.data.forEach((row: any) => {
-          if (row.key in map) (map as any)[row.key] = row.value || "";
+        data.forEach((row: any) => {
+          if (row.key in map) {
+            (map as any)[row.key] = row.value || "";
+          }
         });
         setSettings(map);
       }
-      if (secureRes.data) {
-        const pc = { paystation_merchant_id: "", paystation_password: "" };
-        (secureRes.data as any[]).forEach((row: any) => {
-          if (row.key === "paystation_merchant_id") pc.paystation_merchant_id = row.value || "";
-          if (row.key === "paystation_password") pc.paystation_password = row.value || "";
-        });
-        setPaymentConfig(pc);
-      }
       setLoading(false);
     };
-    fetchAll();
+    fetchSettings();
   }, []);
 
   const handleSave = async () => {
@@ -87,22 +75,6 @@ export default function AdminSettings() {
       toast({ title: "ত্রুটি", description: err.message, variant: "destructive" });
     } finally {
       setSaving(false);
-    }
-  };
-
-  const handleSavePayment = async () => {
-    setSavingPayment(true);
-    try {
-      for (const [key, value] of Object.entries(paymentConfig)) {
-        await supabase
-          .from("secure_settings" as any)
-          .upsert({ key, value, updated_at: new Date().toISOString() } as any, { onConflict: "key" });
-      }
-      toast({ title: "পেমেন্ট সেটিংস সেভ হয়েছে ✓" });
-    } catch (err: any) {
-      toast({ title: "ত্রুটি", description: err.message, variant: "destructive" });
-    } finally {
-      setSavingPayment(false);
     }
   };
 
@@ -301,54 +273,6 @@ export default function AdminSettings() {
           <Label className="font-bengali">হেড সেকশনে কাস্টম কোড (Advanced)</Label>
           <Textarea value={settings.custom_head_code} onChange={(e) => setSettings({ ...settings, custom_head_code: e.target.value })} rows={4} placeholder="<script>...</script> বা অন্য যেকোনো কোড" className="font-mono text-xs" />
           <p className="text-xs text-muted-foreground font-bengali">এই কোড সাইটের &lt;head&gt; সেকশনে যোগ হবে। সতর্কতার সাথে ব্যবহার করুন।</p>
-        </CardContent>
-      </Card>
-
-      {/* Payment Gateway */}
-      <Card className="shadow-brand-sm border-secondary/30">
-        <CardHeader>
-          <CardTitle className="font-bengali text-base flex items-center gap-2">
-            <CreditCard className="h-4 w-4 text-secondary" /> পেমেন্ট গেটওয়ে (PayStation)
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="bg-secondary-subtle rounded-xl p-4 border border-secondary/20">
-            <p className="text-sm font-bengali text-muted-foreground">
-              PayStation এর Merchant ID ও Password এখানে সেট করুন। এটি পরিবর্তন করলে আপনার পেমেন্ট গেটওয়ে মার্চেন্ট পরিবর্তন হবে।
-            </p>
-          </div>
-          <div className="space-y-2">
-            <Label className="font-bengali">Merchant ID</Label>
-            <Input
-              value={paymentConfig.paystation_merchant_id}
-              onChange={(e) => setPaymentConfig({ ...paymentConfig, paystation_merchant_id: e.target.value })}
-              placeholder="আপনার PayStation Merchant ID"
-              className="font-body"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label className="font-bengali">Password</Label>
-            <div className="relative">
-              <Input
-                type={showPassword ? "text" : "password"}
-                value={paymentConfig.paystation_password}
-                onChange={(e) => setPaymentConfig({ ...paymentConfig, paystation_password: e.target.value })}
-                placeholder="আপনার PayStation Password"
-                className="font-body pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </button>
-            </div>
-          </div>
-          <Button onClick={handleSavePayment} disabled={savingPayment} className="gap-2 font-bengali bg-secondary hover:bg-secondary-light text-secondary-foreground shadow-gold">
-            {savingPayment ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            পেমেন্ট সেটিংস সেভ করুন
-          </Button>
         </CardContent>
       </Card>
     </div>
