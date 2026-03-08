@@ -123,7 +123,7 @@ export default function HomePage() {
               </motion.div>
 
               {/* Trust stats */}
-              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-10">
+              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center gap-6 lg:gap-10">
                 {stats.slice(0, 3).map((s, i) => (
                   <div key={s.label} className="flex items-center gap-3">
                     <div className="h-11 w-11 rounded-xl glass flex items-center justify-center">
