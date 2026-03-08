@@ -32,6 +32,7 @@ const App = () => (
           <Route path="/books" element={<><Navbar /><main className="flex-1"><Books /></main><Footer /></>} />
           <Route path="/books/:slug" element={<><Navbar /><main className="flex-1"><BookDetail /></main><Footer /></>} />
           <Route path="/contact" element={<><Navbar /><main className="flex-1"><Contact /></main><Footer /></>} />
+          <Route path="/payment-success" element={<PaymentSuccess />} />
 
           {/* Admin routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
