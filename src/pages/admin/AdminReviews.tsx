@@ -41,9 +41,9 @@ export default function AdminReviews() {
   const fetchBooks = async () => {
     const { data } = await supabase
       .from("books")
-      .select("id, title, reviews, rating, review_count")
+      .select("*")
       .order("title");
-    setBooks(data || []);
+    setBooks((data as Book[]) || []);
     setLoading(false);
   };
 
