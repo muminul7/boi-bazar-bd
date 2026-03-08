@@ -122,11 +122,6 @@ export default function HomePage() {
                     বই দেখুন <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
-                <a href="#how-it-works">
-                  <Button size="lg" variant="outline" className="font-bengali text-base glass border-white/20 hover:bg-white/15 px-10 py-6 rounded-xl" style={{ color: "hsl(0, 0%, 100%)" }}>
-                    কিভাবে কাজ করে?
-                  </Button>
-                </a>
               </motion.div>
 
               {/* Trust stats */}
