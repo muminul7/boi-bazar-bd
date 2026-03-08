@@ -23,6 +23,7 @@ export interface Book {
   format: string;
   language: string;
   publishedDate: string;
+  previewPages: { pageNumber: number; content: string }[];
   reviews: {
     name: string;
     avatar: string;
