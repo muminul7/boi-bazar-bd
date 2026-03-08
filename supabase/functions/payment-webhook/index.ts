@@ -40,8 +40,8 @@ serve(async (req) => {
 
     if (status === "VALID" || status === "VALIDATED") {
       // Validate with SSLCommerz
-      const storeId = Deno.env.get("SSLCOMMERZ_STORE_ID") || "testp6aborjane67b4";
-      const storePass = Deno.env.get("SSLCOMMERZ_STORE_PASSWORD") || "testp6@borjane67b4";
+      const storeId = Deno.env.get("SSLCOMMERZ_STORE_ID") || "testbox";
+      const storePass = Deno.env.get("SSLCOMMERZ_STORE_PASSWORD") || "qwerty";
       const isSandbox = Deno.env.get("SSLCOMMERZ_SANDBOX") !== "false";
       const baseUrl = isSandbox
         ? "https://sandbox.sslcommerz.com"
