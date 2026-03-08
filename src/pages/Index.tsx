@@ -140,32 +140,6 @@ export default function HomePage() {
 
             </motion.div>
 
-            {/* Right: Hero Image */}
-            <motion.div
-              initial={{ opacity: 0, x: 40, scale: 0.95 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              transition={{ delay: 0.4, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              className="relative hidden lg:flex items-center justify-center"
-            >
-              <div className="relative">
-                {/* Glow behind image */}
-                <div className="absolute -inset-6 rounded-3xl opacity-30" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
-                <img
-                  src={heroIllustration}
-                  alt="eKitab — বাংলা ইবুক প্ল্যাটফর্ম"
-                  className="relative rounded-2xl shadow-brand-xl w-full max-w-md object-cover border-2 border-white/10"
-                />
-                {/* Floating badge */}
-                <motion.div
-                  animate={{ y: [0, -8, 0] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-                  className="absolute -bottom-4 -left-4 glass rounded-xl px-4 py-3 flex items-center gap-2"
-                >
-                  <Star className="h-5 w-5 text-gold fill-gold" />
-                  <span className="font-bengali text-sm font-semibold">৯৮% সন্তুষ্ট পাঠক</span>
-                </motion.div>
-              </div>
-            </motion.div>
           </div>
         </div>
       </section>
