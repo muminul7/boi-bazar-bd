@@ -63,7 +63,7 @@ export default function HomePage() {
             <motion.div initial="hidden" animate="visible" variants={stagger} className="text-primary-foreground">
               <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-6 rounded-full px-5 py-2 text-sm font-bengali glass">
                 <Sparkles className="h-4 w-4 text-gold" />
-                <span>বাংলাদেশের #১ ই-বুক স্টোর</span>
+                <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
 
               <motion.h1 variants={fadeUp} custom={1} className="text-4xl lg:text-5xl xl:text-[3.5rem] font-bold font-bengali leading-[1.2] mb-6">
