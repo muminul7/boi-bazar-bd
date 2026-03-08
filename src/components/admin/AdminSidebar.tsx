@@ -1,4 +1,4 @@
-import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut } from "lucide-react";
+import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut, MessageSquare } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 const items = [
   { title: "ড্যাশবোর্ড", url: "/admin", icon: LayoutDashboard },
   { title: "বই ম্যানেজমেন্ট", url: "/admin/books", icon: BookOpen },
+  { title: "রিভিউ", url: "/admin/reviews", icon: MessageSquare },
   { title: "অর্ডার", url: "/admin/orders", icon: ShoppingCart },
   { title: "কুপন", url: "/admin/coupons", icon: Tag },
 ];
