@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { bookId, customerName, customerEmail, customerPhone, billingAddress, couponCode, amount, discount } = await req.json();
+    const { bookId, bookTitle, customerName, customerEmail, customerPhone, billingAddress, couponCode, amount, discount } = await req.json();
 
     if (!bookId || !customerName || !customerEmail || !amount) {
       return new Response(JSON.stringify({ error: "Missing required fields" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
