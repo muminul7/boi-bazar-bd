@@ -59,9 +59,10 @@ export default function HomePage() {
           <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, hsl(174, 65%, 60%), transparent 60%)" }} />
         </div>
 
-        <div className="container mx-auto py-20 lg:py-32 relative z-10">
-          <div className="max-w-5xl mx-auto text-center text-primary-foreground">
-            <motion.div initial="hidden" animate="visible" variants={stagger}>
+        <div className="container mx-auto py-20 lg:py-28 relative z-10">
+          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center text-primary-foreground">
+            {/* Left: Text content */}
+            <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center lg:text-left">
               
               {/* Badge */}
               <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-8 rounded-full px-5 py-2.5 text-sm font-bengali glass">
@@ -69,18 +70,18 @@ export default function HomePage() {
                 <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
 
-              {/* Headline - dramatic two-part layout */}
+              {/* Headline */}
               <motion.h1 variants={fadeUp} custom={1} className="font-bold font-bengali mb-8">
-                <span className="block text-3xl md:text-4xl lg:text-5xl xl:text-[3.25rem] leading-tight opacity-90 mb-4">
+                <span className="block text-3xl md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4">
                   যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।
                 </span>
                 <span className="relative inline-block">
-                  <span className="block text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-gradient-gold leading-tight font-extrabold">
+                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-extrabold">
                     যে শেখা চালিয়ে যায়,
                   </span>
                 </span>
                 <span className="relative inline-block mt-1">
-                  <span className="block text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-gradient-gold leading-tight font-extrabold">
+                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-extrabold">
                     সে এগিয়ে যায়।
                   </span>
                   <motion.svg 
@@ -103,12 +104,12 @@ export default function HomePage() {
               </motion.h1>
 
               {/* Subheadline */}
-              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl mx-auto">
+              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl lg:max-w-none">
                 মার্কেটিং, বিজনেস অটোমেশন, AI, স্কেলিং — সব ধরনের উদ্যোক্তাদের জন্য তৈরি প্র্যাকটিক্যাল গাইড।
               </motion.p>
 
               {/* CTAs */}
-              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
+              <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-14">
                 <Link to="/books">
                   <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-10 py-6 rounded-xl">
                     বই দেখুন <ArrowRight className="h-5 w-5" />
@@ -121,8 +122,8 @@ export default function HomePage() {
                 </a>
               </motion.div>
 
-              {/* Trust stats - horizontal */}
-              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center gap-6 lg:gap-12">
+              {/* Trust stats */}
+              <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center lg:justify-start gap-6 lg:gap-10">
                 {stats.slice(0, 3).map((s, i) => (
                   <div key={s.label} className="flex items-center gap-3">
                     <div className="h-11 w-11 rounded-xl glass flex items-center justify-center">
@@ -132,11 +133,38 @@ export default function HomePage() {
                       <div className="text-xl font-bold font-body text-gold">{s.value}</div>
                       <div className="text-xs font-bengali opacity-70">{s.label}</div>
                     </div>
-                    {i < 2 && <div className="hidden lg:block h-8 w-px bg-white/15 ml-6" />}
+                    {i < 2 && <div className="hidden lg:block h-8 w-px bg-white/15 ml-4" />}
                   </div>
                 ))}
               </motion.div>
 
+            </motion.div>
+
+            {/* Right: Hero Image */}
+            <motion.div
+              initial={{ opacity: 0, x: 40, scale: 0.95 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              transition={{ delay: 0.4, duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              className="relative hidden lg:flex items-center justify-center"
+            >
+              <div className="relative">
+                {/* Glow behind image */}
+                <div className="absolute -inset-6 rounded-3xl opacity-30" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
+                <img
+                  src={heroIllustration}
+                  alt="eKitab — বাংলা ইবুক প্ল্যাটফর্ম"
+                  className="relative rounded-2xl shadow-brand-xl w-full max-w-md object-cover border-2 border-white/10"
+                />
+                {/* Floating badge */}
+                <motion.div
+                  animate={{ y: [0, -8, 0] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute -bottom-4 -left-4 glass rounded-xl px-4 py-3 flex items-center gap-2"
+                >
+                  <Star className="h-5 w-5 text-gold fill-gold" />
+                  <span className="font-bengali text-sm font-semibold">৯৮% সন্তুষ্ট পাঠক</span>
+                </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
