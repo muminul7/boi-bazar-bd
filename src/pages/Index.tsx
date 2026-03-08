@@ -116,7 +116,7 @@ export default function HomePage() {
                 <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
               <motion.h1 variants={fadeUp} custom={1} className="font-bold font-bengali mb-8">
-                <span className="block md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4 text-2xl font-semibold py-[10px]">যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।</span>
+                <span className="block md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4 text-2xl font-semibold py-0">যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।</span>
                 <span className="relative inline-block">
                   <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-bold">যে শেখা চালিয়ে যায়,</span>
                 </span>
