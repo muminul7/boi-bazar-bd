@@ -1,4 +1,4 @@
-import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut, MessageSquare, Mail, Settings, Quote } from "lucide-react";
+import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut, MessageSquare, Mail, Settings, Quote, MessageCircle } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
