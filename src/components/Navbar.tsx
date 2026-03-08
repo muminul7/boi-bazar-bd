@@ -22,8 +22,8 @@ export default function Navbar() {
             <BookOpen className="h-5 w-5 text-primary-foreground" />
           </div>
           <div className="flex flex-col leading-none">
-            <span className="text-lg font-bold text-foreground font-bengali tracking-tight">একিতাব</span>
-            <span className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">eKitab Store</span>
+            <span className="text-lg font-bold text-foreground font-bengali tracking-tight">Boi Bazar</span>
+            <span className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">Book Store</span>
           </div>
         </Link>
 
