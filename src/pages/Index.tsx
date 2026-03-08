@@ -62,7 +62,7 @@ export default function HomePage() {
         <div className="container mx-auto py-20 lg:py-28 relative z-10">
           <div className="flex flex-col items-center text-primary-foreground max-w-3xl mx-auto">
             {/* Left: Text content */}
-            <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center lg:text-left">
+            <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center">
               
               {/* Badge */}
               <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-8 rounded-full px-5 py-2.5 text-sm font-bengali glass">
