@@ -7,12 +7,38 @@ serve(async (req) => {
     const status = url.searchParams.get("status");
     const invoiceNumber = url.searchParams.get("invoice_number");
     const trxId = url.searchParams.get("trx_id");
+    const sig = url.searchParams.get("sig");
 
-    console.log("Payment webhook received:", { status, invoiceNumber, trxId });
+    console.log("Payment webhook received:", { status, invoiceNumber, trxId, hasSig: !!sig });
 
     if (!invoiceNumber) {
       return new Response("Missing invoice_number", { status: 400 });
     }
+
+    // --- HMAC Signature Validation ---
+    const password = Deno.env.get("PAYSTATION_PASSWORD");
+    if (!password || !sig) {
+      console.error("Missing PAYSTATION_PASSWORD or signature");
+      return new Response("Unauthorized", { status: 401 });
+    }
+
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(password),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const expectedSig = Array.from(
+      new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(invoiceNumber)))
+    ).map(b => b.toString(16).padStart(2, "0")).join("");
+
+    if (sig !== expectedSig) {
+      console.error("Invalid webhook signature!", { expected: expectedSig, received: sig });
+      return new Response("Forbidden", { status: 403 });
+    }
+    console.log("Webhook signature verified successfully");
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;

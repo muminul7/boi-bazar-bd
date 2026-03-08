@@ -109,7 +109,21 @@ serve(async (req) => {
     }
 
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
-    const callbackUrl = `${supabaseUrl}/functions/v1/payment-webhook`;
+
+    // Generate HMAC signature using PAYSTATION_PASSWORD as key
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(password),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const signature = Array.from(
+      new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(invoiceNumber)))
+    ).map(b => b.toString(16).padStart(2, "0")).join("");
+
+    const callbackUrl = `${supabaseUrl}/functions/v1/payment-webhook?sig=${signature}`;
 
     // PayStation initiate-payment API
     const formData = new FormData();
