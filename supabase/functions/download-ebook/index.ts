@@ -50,8 +50,14 @@ serve(async (req) => {
       });
     }
 
-    // Get the file URL from the book
-    const fileUrl = order.books?.file_url;
+    // Get file URL from book_files table (secured, not publicly accessible)
+    const { data: bookFile } = await supabase
+      .from("book_files")
+      .select("file_url")
+      .eq("book_id", order.book_id)
+      .single();
+
+    const fileUrl = bookFile?.file_url;
     if (!fileUrl) {
       return new Response(errorPage("এই বইয়ের ফাইল এখনো আপলোড করা হয়নি। অনুগ্রহ করে যোগাযোগ করুন।"), {
         status: 404,
@@ -65,13 +71,13 @@ serve(async (req) => {
       .update({ download_count: downloadCount + 1 })
       .eq("id", order.id);
 
-    // If file is in Supabase storage (starts with storage path), generate signed URL
+    // If file is in Supabase storage, generate signed URL
     if (fileUrl.startsWith("ebooks/") || fileUrl.startsWith("/storage/")) {
       const filePath = fileUrl.replace(/^\/storage\/v1\/object\/public\//, "").replace(/^ebooks\//, "");
       const { data: signedData, error: signError } = await supabase
         .storage
         .from("ebooks")
-        .createSignedUrl(filePath, 300); // 5 min signed URL
+        .createSignedUrl(filePath, 300);
 
       if (signError || !signedData?.signedUrl) {
         console.error("Signed URL error:", signError);

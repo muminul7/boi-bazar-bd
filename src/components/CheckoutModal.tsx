@@ -37,25 +37,22 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
   const handleApplyCoupon = async () => {
     if (!coupon.trim()) return;
 
-    // Try to validate coupon from DB
-    const { data, error } = await supabase
-      .from("coupons")
-      .select("*")
-      .eq("code", coupon.toUpperCase())
-      .maybeSingle();
+    // Validate coupon via secure RPC function
+    const { data, error } = await supabase.rpc("validate_coupon", {
+      _code: coupon.toUpperCase(),
+      _book_price: book.price,
+    });
 
-    if (error || !data) {
-      toast({ title: "কুপন কোড ভুল", description: "সঠিক কুপন কোড দিন।", variant: "destructive" });
+    const result = data as unknown as { valid: boolean; discount: number; message?: string } | null;
+
+    if (error || !result || !result.valid) {
+      toast({ title: "কুপন কোড ভুল", description: result?.message || "সঠিক কুপন কোড দিন।", variant: "destructive" });
       return;
     }
 
-    const discountAmount = data.discount_type === "percentage"
-      ? Math.round(book.price * data.discount_value / 100)
-      : data.discount_value;
-
-    setCouponDiscount(discountAmount);
+    setCouponDiscount(result.discount);
     setCouponApplied(true);
-    toast({ title: "কুপন প্রয়োগ হয়েছে!", description: `৳${discountAmount} ছাড় পেয়েছেন।` });
+    toast({ title: "কুপন প্রয়োগ হয়েছে!", description: `৳${result.discount} ছাড় পেয়েছেন।` });
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
