@@ -41,6 +41,9 @@ export default function AdminSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [paymentConfig, setPaymentConfig] = useState({ paystation_merchant_id: "", paystation_password: "" });
+  const [showPassword, setShowPassword] = useState(false);
+  const [savingPayment, setSavingPayment] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
