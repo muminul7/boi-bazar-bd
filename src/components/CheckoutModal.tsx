@@ -213,7 +213,7 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
 
               <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary-subtle border border-secondary/30 text-xs font-bengali text-secondary-foreground">
                 <Shield className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>আপনার পেমেন্ট SSLCommerz দ্বারা সুরক্ষিত। বিকাশ ও নগদ পেমেন্ট SSLCommerz গেটওয়ে দিয়ে প্রসেস হবে।</span>
+                <span>আপনার পেমেন্ট PayStation দ্বারা সুরক্ষিত। কার্ড, বিকাশ, নগদ, রকেট সব পেমেন্ট মেথড সাপোর্ট করে।</span>
               </div>
 
               <div className="flex gap-2">
