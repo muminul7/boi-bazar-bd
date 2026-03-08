@@ -168,7 +168,7 @@ export default function AdminReviews() {
                 <SelectItem key={book.id} value={book.id}>
                   <span className="font-bengali">{book.title}</span>
                   <span className="text-xs text-muted-foreground ml-2">
-                    ({(book.reviews as Review[] | null)?.length || 0} রিভিউ)
+                    ({(book.reviews as unknown as Review[] | null)?.length || 0} রিভিউ)
                   </span>
                 </SelectItem>
               ))}
