@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, CheckCircle, Star, Shield, Zap, TrendingUp, Users, Sparkles, Download, Heart, Quote, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,24 +48,27 @@ export default function HomePage() {
     return ["সব বই", ...Array.from(cats)];
   }, [books]);
 
-  // Collect all reviews from all books for testimonials
-  const testimonials = useMemo(() => {
-    const allReviews: { name: string; role: string; rating: number; text: string; avatar: string }[] = [];
-    books.forEach((book) => {
-      (book.reviews || []).forEach((r) => {
-        if (r.rating >= 4 && r.text) {
-          allReviews.push({
-            name: r.name,
-            role: `পাঠক — ${book.title}`,
-            rating: r.rating,
-            text: r.text,
-            avatar: r.name ? r.name.charAt(0) : "?",
-          });
-        }
+  // Fetch testimonials from DB
+  const [testimonials, setTestimonials] = useState<{ name: string; role: string; rating: number; text: string; avatar: string }[]>([]);
+  useEffect(() => {
+    supabase
+      .from("testimonials")
+      .select("*")
+      .eq("active", true)
+      .order("sort_order", { ascending: true })
+      .limit(6)
+      .then(({ data }) => {
+        setTestimonials(
+          (data || []).map((t: any) => ({
+            name: t.name,
+            role: t.role || "",
+            rating: t.rating,
+            text: t.text,
+            avatar: t.avatar || t.name?.charAt(0) || "?",
+          }))
+        );
       });
-    });
-    return allReviews.slice(0, 3);
-  }, [books]);
+  }, []);
 
   const [email, setEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);

@@ -21,6 +21,7 @@ const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminSubscribers = lazy(() => import("./pages/admin/AdminSubscribers"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="books" element={<AdminBooks />} />
               <Route path="orders" element={<AdminOrders />} />
               <Route path="reviews" element={<AdminReviews />} />
+              <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="coupons" element={<AdminCoupons />} />
               <Route path="subscribers" element={<AdminSubscribers />} />
               <Route path="settings" element={<AdminSettings />} />
