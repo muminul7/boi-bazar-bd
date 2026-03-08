@@ -104,7 +104,7 @@ export default function HomePage() {
               </motion.h1>
 
               {/* Subheadline */}
-              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl lg:max-w-none">
+              <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl mx-auto lg:mx-0 lg:max-w-none">
                 মার্কেটিং, বিজনেস অটোমেশন, AI, স্কেলিং — সব ধরনের উদ্যোক্তাদের জন্য তৈরি প্র্যাকটিক্যাল গাইড।
               </motion.p>
 
