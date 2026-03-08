@@ -24,7 +24,11 @@ const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
 const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminSubscribers = lazy(() => import("./pages/admin/AdminSubscribers"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
+const AdminMessages = lazy(() => import("./pages/admin/AdminMessages"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const Terms = lazy(() => import("./pages/Terms"));
+const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 
 const queryClient = new QueryClient();
 
@@ -48,6 +52,9 @@ const App = () => (
             <Route path="/books" element={<><Navbar /><main className="flex-1"><Books /></main><Footer /></>} />
             <Route path="/books/:slug" element={<><Navbar /><main className="flex-1"><BookDetail /></main><Footer /></>} />
             <Route path="/contact" element={<><Navbar /><main className="flex-1"><Contact /></main><Footer /></>} />
+            <Route path="/privacy" element={<><Navbar /><main className="flex-1"><PrivacyPolicy /></main><Footer /></>} />
+            <Route path="/terms" element={<><Navbar /><main className="flex-1"><Terms /></main><Footer /></>} />
+            <Route path="/refund" element={<><Navbar /><main className="flex-1"><RefundPolicy /></main><Footer /></>} />
             <Route path="/payment-success" element={<PaymentSuccess />} />
 
             {/* Admin routes */}
@@ -60,6 +67,7 @@ const App = () => (
               <Route path="testimonials" element={<AdminTestimonials />} />
               <Route path="coupons" element={<AdminCoupons />} />
               <Route path="subscribers" element={<AdminSubscribers />} />
+              <Route path="messages" element={<AdminMessages />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
 

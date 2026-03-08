@@ -64,8 +64,23 @@ export default function AdminOrders() {
   };
 
   const handleResendEmail = async (order: Order) => {
-    toast({ title: "ইমেইল পাঠানো হচ্ছে...", description: `${order.customer_email} এ ডেলিভারি ইমেইল পাঠানো হবে।` });
-    // TODO: implement edge function for resending email
+    if (order.payment_status !== "paid") {
+      toast({ title: "পেমেন্ট সম্পন্ন হয়নি", description: "শুধুমাত্র পেইড অর্ডারে ইমেইল পাঠানো যায়।", variant: "destructive" });
+      return;
+    }
+    toast({ title: "ইমেইল পাঠানো হচ্ছে..." });
+    try {
+      const { data, error } = await supabase.functions.invoke("send-delivery-email", {
+        body: { orderId: order.id },
+      });
+      if (error) throw error;
+      toast({ title: "ডেলিভারি ইমেইল পাঠানো হয়েছে ✓", description: `${order.customer_email} এ পাঠানো হয়েছে।` });
+      // Refresh orders
+      const { data: updated } = await supabase.from("orders").select("*, books(title)").order("created_at", { ascending: false });
+      setOrders((updated as Order[]) || []);
+    } catch (err: any) {
+      toast({ title: "ইমেইল পাঠাতে সমস্যা", description: err.message, variant: "destructive" });
+    }
   };
 
   return (

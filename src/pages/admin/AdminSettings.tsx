@@ -17,6 +17,8 @@ interface SettingsMap {
   contact_email: string;
   contact_phone: string;
   facebook_url: string;
+  youtube_url: string;
+  instagram_url: string;
   site_logo_url: string;
 }
 
@@ -29,6 +31,8 @@ const defaultSettings: SettingsMap = {
   contact_email: "",
   contact_phone: "",
   facebook_url: "",
+  youtube_url: "",
+  instagram_url: "",
   site_logo_url: "",
 };
 
@@ -221,6 +225,14 @@ export default function AdminSettings() {
           <div className="space-y-2">
             <Label className="font-bengali">Facebook পেজ URL</Label>
             <Input value={settings.facebook_url} onChange={(e) => setSettings({ ...settings, facebook_url: e.target.value })} placeholder="https://facebook.com/..." />
+          </div>
+          <div className="space-y-2">
+            <Label className="font-bengali">YouTube চ্যানেল URL</Label>
+            <Input value={settings.youtube_url} onChange={(e) => setSettings({ ...settings, youtube_url: e.target.value })} placeholder="https://youtube.com/..." />
+          </div>
+          <div className="space-y-2">
+            <Label className="font-bengali">Instagram URL</Label>
+            <Input value={settings.instagram_url} onChange={(e) => setSettings({ ...settings, instagram_url: e.target.value })} placeholder="https://instagram.com/..." />
           </div>
           <div className="col-span-full space-y-2">
             <Label className="font-bengali">সাইটের বিবরণ (SEO)</Label>
