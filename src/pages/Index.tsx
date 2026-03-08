@@ -48,6 +48,30 @@ const steps = [
 export default function HomePage() {
   const featuredBooks = books.filter((b) => b.featured);
   const bestSellers = books.filter((b) => b.bestSeller);
+  const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSubscribing(true);
+    try {
+      const { error } = await supabase.from("newsletter_subscribers").insert({ email: email.trim().toLowerCase() });
+      if (error) {
+        if (error.code === "23505") {
+          toast({ title: "ইতোমধ্যে সাবস্ক্রাইব করা হয়েছে!", description: "এই ইমেইল আগে থেকেই আমাদের তালিকায় আছে।" });
+        } else throw error;
+      } else {
+        toast({ title: "সাবস্ক্রিপশন সফল! 🎉", description: "নতুন বই ও অফারের আপডেট পাবেন ইমেইলে।" });
+        setEmail("");
+      }
+    } catch {
+      toast({ title: "কিছু সমস্যা হয়েছে", description: "অনুগ্রহ করে আবার চেষ্টা করুন।", variant: "destructive" });
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen overflow-hidden">
