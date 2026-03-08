@@ -26,8 +26,12 @@ serve(async (req) => {
     const downloadToken = crypto.randomUUID();
     const downloadExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(); // 48 hours
 
+    // Check if bookId is a valid UUID (DB book) or static ID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const isDbBook = uuidRegex.test(bookId);
+
     const { data: order, error: orderError } = await supabase.from("orders").insert({
-      book_id: bookId,
+      book_id: isDbBook ? bookId : null,
       customer_name: customerName,
       customer_email: customerEmail,
       customer_phone: customerPhone || null,
