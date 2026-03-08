@@ -66,11 +66,16 @@ export default function HomePage() {
                 <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
 
-              <motion.h1 variants={fadeUp} custom={1} className="text-4xl lg:text-5xl xl:text-[3.5rem] font-bold font-bengali leading-[1.2] mb-6">
-                যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।{" "}
+              <motion.h1 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl xl:text-5xl font-bold font-bengali leading-[1.35] mb-6">
+                <span className="block mb-2 opacity-90">যে শেখা বন্ধ করে,</span>
+                <span className="block mb-3 opacity-90">সে পিছিয়ে পড়ে।</span>
+                <span className="relative inline-block mt-1">
+                  <span className="text-gradient-gold text-[1.1em]">যে শেখা চালিয়ে যায়,</span>
+                </span>
+                <br />
                 <span className="relative inline-block">
-                  <span className="text-gradient-gold">যে শেখা চালিয়ে যায়, সে এগিয়ে যায়।</span>
-                  <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none">
+                  <span className="text-gradient-gold text-[1.1em]">সে এগিয়ে যায়।</span>
+                  <svg className="absolute -bottom-1.5 left-0 w-full" viewBox="0 0 200 8" fill="none">
                     <path d="M1 5.5C40 2 80 1 100 3C120 5 160 6 199 2.5" stroke="hsl(39, 88%, 52%)" strokeWidth="2.5" strokeLinecap="round" />
                   </svg>
                 </span>
