@@ -21,6 +21,7 @@ const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
 const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminTestimonials = lazy(() => import("./pages/admin/AdminTestimonials"));
 const AdminSubscribers = lazy(() => import("./pages/admin/AdminSubscribers"));
 const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
