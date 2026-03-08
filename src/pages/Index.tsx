@@ -14,9 +14,9 @@ const fadeUp: Variants = {
 const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 
 const stats = [
-  { value: "৫,০০০+", label: "সন্তুষ্ট পাঠক", icon: Users },
-  { value: "১৫+", label: "প্রিমিয়াম বই", icon: BookOpen },
-  { value: "৯৮%", label: "সাফল্যের হার", icon: TrendingUp },
+  { value: "৫,০০০+", label: "উদ্যোক্তা", icon: Users },
+  { value: "১৫+", label: "প্র্যাকটিক্যাল গাইড", icon: BookOpen },
+  { value: "৯৮%", label: "পাঠক সন্তুষ্ট", icon: TrendingUp },
   { value: "৭ দিন", label: "মানি-ব্যাক গ্যারান্টি", icon: Shield },
 ];
 
