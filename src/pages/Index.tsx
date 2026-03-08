@@ -118,10 +118,10 @@ export default function HomePage() {
               <motion.h1 variants={fadeUp} custom={1} className="font-bold font-bengali mb-8">
                 <span className="block md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4 text-2xl font-medium">যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।</span>
                 <span className="relative inline-block">
-                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-semibold">যে শেখা চালিয়ে যায়,</span>
+                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-bold">যে শেখা চালিয়ে যায়,</span>
                 </span>
                 <span className="relative inline-block mt-1">
-                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-semibold">সে এগিয়ে যায়।</span>
+                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-bold">সে এগিয়ে যায়।</span>
                   <motion.svg initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }} className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 10" fill="none">
                     <motion.path d="M2 7C50 3 100 2 150 4C200 6 250 5 298 3" stroke="hsl(39, 88%, 52%)" strokeWidth="3" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }} />
                   </motion.svg>
