@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { BookOpen, Mail, Phone, MapPin, Facebook, Youtube, Instagram } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Footer() {
   return (
