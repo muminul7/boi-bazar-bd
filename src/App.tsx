@@ -16,7 +16,6 @@ import Dashboard from "./pages/admin/Dashboard";
 import AdminBooks from "./pages/admin/AdminBooks";
 import AdminOrders from "./pages/admin/AdminOrders";
 import AdminCoupons from "./pages/admin/AdminCoupons";
-import AdminFinancials from "./pages/admin/AdminFinancials";
 import PaymentSuccess from "./pages/PaymentSuccess";
 
 const queryClient = new QueryClient();
