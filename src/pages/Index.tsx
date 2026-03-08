@@ -118,19 +118,9 @@ export default function HomePage() {
               {/* CTAs */}
               <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
                 <Link to="/books">
-                  <motion.div
-                    whileHover={{ scale: 1.05, y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="relative group"
-                  >
-                    <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-secondary via-secondary-light to-secondary opacity-70 blur-lg group-hover:opacity-100 transition-opacity duration-300" />
-                    <Button size="lg" className="relative gap-3 bg-gradient-to-r from-secondary to-secondary-light text-secondary-foreground font-bengali text-lg font-semibold shadow-gold px-12 py-7 rounded-2xl border-0 overflow-hidden">
-                      <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                      <BookOpen className="h-5 w-5" />
-                      বই দেখুন
-                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
-                    </Button>
-                  </motion.div>
+                  <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-10 py-6 rounded-xl">
+                    বই দেখুন <ArrowRight className="h-5 w-5" />
+                  </Button>
                 </Link>
               </motion.div>
 
