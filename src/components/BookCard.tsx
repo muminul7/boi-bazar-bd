@@ -22,7 +22,6 @@ export default function BookCard({ book }: BookCardProps) {
             decoding="async"
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          />
           {/* Badges */}
           <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
             {book.bestSeller && (
