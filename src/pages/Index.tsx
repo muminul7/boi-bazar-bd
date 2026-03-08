@@ -60,7 +60,7 @@ export default function HomePage() {
         </div>
 
         <div className="container mx-auto py-20 lg:py-28 relative z-10">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center text-primary-foreground">
+          <div className="flex flex-col items-center text-primary-foreground max-w-3xl mx-auto">
             {/* Left: Text content */}
             <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center lg:text-left">
               
