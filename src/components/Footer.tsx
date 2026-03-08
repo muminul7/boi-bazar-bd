@@ -4,6 +4,13 @@ import { BookOpen, Mail, Phone, MapPin, Facebook, Youtube, Instagram } from "luc
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Footer() {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.from("site_settings").select("value").eq("key", "site_logo_url").maybeSingle()
+      .then(({ data }) => { if (data?.value) setLogoUrl(data.value); });
+  }, []);
+
   return (
     <footer style={{ backgroundColor: "hsl(210, 25%, 12%)", color: "hsl(0, 0%, 100%)" }}>
       <div className="container mx-auto pt-14 pb-8">
@@ -11,9 +18,13 @@ export default function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <Link to="/" className="inline-flex items-center gap-2.5 mb-4">
-              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
-                <BookOpen className="h-5 w-5 text-primary-foreground" />
-              </div>
+              {logoUrl ? (
+                <img src={logoUrl} alt="Boi Bazar" className="h-9 w-9 rounded-xl object-contain" />
+              ) : (
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
+                  <BookOpen className="h-5 w-5 text-primary-foreground" />
+                </div>
+              )}
               <div>
                 <div className="text-lg font-bold font-bengali">Boi Bazar</div>
                 <div className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">Book Store</div>
