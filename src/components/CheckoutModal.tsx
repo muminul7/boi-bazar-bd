@@ -78,8 +78,6 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
           customerPhone: form.phone,
           billingAddress: form.address,
           couponCode: couponApplied ? coupon.toUpperCase() : null,
-          amount: total,
-          discount,
         },
       });
 
