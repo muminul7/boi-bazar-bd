@@ -226,6 +226,14 @@ export default function AdminSettings() {
             <Label className="font-bengali">Facebook পেজ URL</Label>
             <Input value={settings.facebook_url} onChange={(e) => setSettings({ ...settings, facebook_url: e.target.value })} placeholder="https://facebook.com/..." />
           </div>
+          <div className="space-y-2">
+            <Label className="font-bengali">YouTube চ্যানেল URL</Label>
+            <Input value={settings.youtube_url} onChange={(e) => setSettings({ ...settings, youtube_url: e.target.value })} placeholder="https://youtube.com/..." />
+          </div>
+          <div className="space-y-2">
+            <Label className="font-bengali">Instagram URL</Label>
+            <Input value={settings.instagram_url} onChange={(e) => setSettings({ ...settings, instagram_url: e.target.value })} placeholder="https://instagram.com/..." />
+          </div>
           <div className="col-span-full space-y-2">
             <Label className="font-bengali">সাইটের বিবরণ (SEO)</Label>
             <Textarea value={settings.site_description} onChange={(e) => setSettings({ ...settings, site_description: e.target.value })} rows={2} placeholder="সার্চ ইঞ্জিনে দেখানোর জন্য সংক্ষিপ্ত বিবরণ" />
