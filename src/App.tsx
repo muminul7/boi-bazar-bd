@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,21 +7,29 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
-import Books from "./pages/Books";
-import BookDetail from "./pages/BookDetail";
-import Contact from "./pages/Contact";
-import NotFound from "./pages/NotFound";
-import AdminLogin from "./pages/AdminLogin";
-import AdminLayout from "./pages/admin/AdminLayout";
-import Dashboard from "./pages/admin/Dashboard";
-import AdminBooks from "./pages/admin/AdminBooks";
-import AdminOrders from "./pages/admin/AdminOrders";
-import AdminCoupons from "./pages/admin/AdminCoupons";
-import AdminReviews from "./pages/admin/AdminReviews";
-import AdminSubscribers from "./pages/admin/AdminSubscribers";
-import PaymentSuccess from "./pages/PaymentSuccess";
+
+// Lazy load non-critical routes
+const Books = lazy(() => import("./pages/Books"));
+const BookDetail = lazy(() => import("./pages/BookDetail"));
+const Contact = lazy(() => import("./pages/Contact"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const AdminLogin = lazy(() => import("./pages/AdminLogin"));
+const AdminLayout = lazy(() => import("./pages/admin/AdminLayout"));
+const Dashboard = lazy(() => import("./pages/admin/Dashboard"));
+const AdminBooks = lazy(() => import("./pages/admin/AdminBooks"));
+const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
+const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
+const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
+const AdminSubscribers = lazy(() => import("./pages/admin/AdminSubscribers"));
+const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 
 const queryClient = new QueryClient();
+
+const Loading = () => (
+  <div className="min-h-[60vh] flex items-center justify-center">
+    <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -28,27 +37,29 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<><Navbar /><main className="flex-1"><Index /></main><Footer /></>} />
-          <Route path="/books" element={<><Navbar /><main className="flex-1"><Books /></main><Footer /></>} />
-          <Route path="/books/:slug" element={<><Navbar /><main className="flex-1"><BookDetail /></main><Footer /></>} />
-          <Route path="/contact" element={<><Navbar /><main className="flex-1"><Contact /></main><Footer /></>} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Suspense fallback={<Loading />}>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<><Navbar /><main className="flex-1"><Index /></main><Footer /></>} />
+            <Route path="/books" element={<><Navbar /><main className="flex-1"><Books /></main><Footer /></>} />
+            <Route path="/books/:slug" element={<><Navbar /><main className="flex-1"><BookDetail /></main><Footer /></>} />
+            <Route path="/contact" element={<><Navbar /><main className="flex-1"><Contact /></main><Footer /></>} />
+            <Route path="/payment-success" element={<PaymentSuccess />} />
 
-          {/* Admin routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<Dashboard />} />
-            <Route path="books" element={<AdminBooks />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="reviews" element={<AdminReviews />} />
-            <Route path="coupons" element={<AdminCoupons />} />
-            <Route path="subscribers" element={<AdminSubscribers />} />
-          </Route>
+            {/* Admin routes */}
+            <Route path="/admin/login" element={<AdminLogin />} />
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<Dashboard />} />
+              <Route path="books" element={<AdminBooks />} />
+              <Route path="orders" element={<AdminOrders />} />
+              <Route path="reviews" element={<AdminReviews />} />
+              <Route path="coupons" element={<AdminCoupons />} />
+              <Route path="subscribers" element={<AdminSubscribers />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
