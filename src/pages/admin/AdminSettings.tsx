@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Settings, Facebook, Save, Loader2, Globe, Code } from "lucide-react";
+import { Settings, Facebook, Save, Loader2, Globe, Code, ImageIcon, Upload, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -17,6 +17,7 @@ interface SettingsMap {
   contact_email: string;
   contact_phone: string;
   facebook_url: string;
+  site_logo_url: string;
 }
 
 const defaultSettings: SettingsMap = {
@@ -28,12 +29,15 @@ const defaultSettings: SettingsMap = {
   contact_email: "",
   contact_phone: "",
   facebook_url: "",
+  site_logo_url: "",
 };
 
 export default function AdminSettings() {
   const [settings, setSettings] = useState<SettingsMap>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,6 +74,46 @@ export default function AdminSettings() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "শুধুমাত্র ইমেজ ফাইল আপলোড করুন", variant: "destructive" });
+      return;
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "ফাইল সাইজ ২MB এর বেশি হতে পারবে না", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop();
+      const fileName = `site-logo-${Date.now()}.${ext}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from("book-covers")
+        .upload(fileName, file, { upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from("book-covers").getPublicUrl(fileName);
+      setSettings({ ...settings, site_logo_url: urlData.publicUrl });
+      toast({ title: "লোগো আপলোড হয়েছে ✓" });
+    } catch (err: any) {
+      toast({ title: "আপলোড ত্রুটি", description: err.message, variant: "destructive" });
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
+
+  const removeLogo = () => {
+    setSettings({ ...settings, site_logo_url: "" });
+  };
+
   if (loading) {
     return <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>;
   }
@@ -89,6 +133,71 @@ export default function AdminSettings() {
         </Button>
       </div>
 
+      {/* Logo */}
+      <Card className="shadow-brand-sm">
+        <CardHeader>
+          <CardTitle className="font-bengali text-base flex items-center gap-2">
+            <ImageIcon className="h-4 w-4 text-primary" /> সাইট লোগো
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-start gap-6">
+            {/* Preview */}
+            <div className="shrink-0">
+              {settings.site_logo_url ? (
+                <div className="relative group">
+                  <div className="h-24 w-24 rounded-xl border border-border overflow-hidden bg-muted flex items-center justify-center">
+                    <img src={settings.site_logo_url} alt="Site Logo" className="h-full w-full object-contain" />
+                  </div>
+                  <button
+                    onClick={removeLogo}
+                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-destructive text-destructive-foreground flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <div className="h-24 w-24 rounded-xl border-2 border-dashed border-border bg-muted/50 flex items-center justify-center">
+                  <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+                </div>
+              )}
+            </div>
+
+            {/* Upload */}
+            <div className="flex-1 space-y-3">
+              <p className="text-sm text-muted-foreground font-bengali">
+                সাইটের Navbar ও Footer-এ এই লোগো দেখানো হবে। PNG বা SVG ফরম্যাট সেরা। সর্বোচ্চ ২MB।
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+              <Button
+                variant="outline"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                className="gap-2 font-bengali"
+              >
+                {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {uploading ? "আপলোড হচ্ছে..." : "লোগো আপলোড করুন"}
+              </Button>
+              <div className="space-y-1.5">
+                <Label className="font-bengali text-xs">অথবা লোগো URL দিন</Label>
+                <Input
+                  value={settings.site_logo_url}
+                  onChange={(e) => setSettings({ ...settings, site_logo_url: e.target.value })}
+                  placeholder="https://example.com/logo.png"
+                  className="text-sm"
+                />
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* General */}
       <Card className="shadow-brand-sm">
         <CardHeader>
@@ -103,7 +212,7 @@ export default function AdminSettings() {
           </div>
           <div className="space-y-2">
             <Label className="font-bengali">যোগাযোগ ইমেইল</Label>
-            <Input type="email" value={settings.contact_email} onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })} placeholder="info@ekitab.com" />
+            <Input type="email" value={settings.contact_email} onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })} placeholder="info@boibazar.com" />
           </div>
           <div className="space-y-2">
             <Label className="font-bengali">ফোন নম্বর</Label>
@@ -130,26 +239,13 @@ export default function AdminSettings() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label className="font-bengali">Facebook Pixel ID</Label>
-            <Input
-              value={settings.facebook_pixel_id}
-              onChange={(e) => setSettings({ ...settings, facebook_pixel_id: e.target.value })}
-              placeholder="যেমন: 123456789012345"
-            />
-            <p className="text-xs text-muted-foreground font-bengali">
-              Facebook Events Manager থেকে আপনার Pixel ID কপি করে এখানে পেস্ট করুন।
-              এটি সেভ করলে সাইটের সব পেজে Facebook Pixel স্বয়ংক্রিয়ভাবে যোগ হবে।
-            </p>
+            <Input value={settings.facebook_pixel_id} onChange={(e) => setSettings({ ...settings, facebook_pixel_id: e.target.value })} placeholder="যেমন: 123456789012345" />
+            <p className="text-xs text-muted-foreground font-bengali">Facebook Events Manager থেকে আপনার Pixel ID কপি করে এখানে পেস্ট করুন।</p>
           </div>
           <div className="space-y-2">
             <Label className="font-bengali">Google Analytics ID</Label>
-            <Input
-              value={settings.google_analytics_id}
-              onChange={(e) => setSettings({ ...settings, google_analytics_id: e.target.value })}
-              placeholder="যেমন: G-XXXXXXXXXX"
-            />
-            <p className="text-xs text-muted-foreground font-bengali">
-              Google Analytics 4 Measurement ID এখানে দিন।
-            </p>
+            <Input value={settings.google_analytics_id} onChange={(e) => setSettings({ ...settings, google_analytics_id: e.target.value })} placeholder="যেমন: G-XXXXXXXXXX" />
+            <p className="text-xs text-muted-foreground font-bengali">Google Analytics 4 Measurement ID এখানে দিন।</p>
           </div>
         </CardContent>
       </Card>
@@ -163,16 +259,8 @@ export default function AdminSettings() {
         </CardHeader>
         <CardContent className="space-y-2">
           <Label className="font-bengali">হেড সেকশনে কাস্টম কোড (Advanced)</Label>
-          <Textarea
-            value={settings.custom_head_code}
-            onChange={(e) => setSettings({ ...settings, custom_head_code: e.target.value })}
-            rows={4}
-            placeholder="<script>...</script> বা অন্য যেকোনো কোড"
-            className="font-mono text-xs"
-          />
-          <p className="text-xs text-muted-foreground font-bengali">
-            এই কোড সাইটের &lt;head&gt; সেকশনে যোগ হবে। সতর্কতার সাথে ব্যবহার করুন।
-          </p>
+          <Textarea value={settings.custom_head_code} onChange={(e) => setSettings({ ...settings, custom_head_code: e.target.value })} rows={4} placeholder="<script>...</script> বা অন্য যেকোনো কোড" className="font-mono text-xs" />
+          <p className="text-xs text-muted-foreground font-bengali">এই কোড সাইটের &lt;head&gt; সেকশনে যোগ হবে। সতর্কতার সাথে ব্যবহার করুন।</p>
         </CardContent>
       </Card>
     </div>
