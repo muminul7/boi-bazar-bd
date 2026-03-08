@@ -22,7 +22,7 @@ const paymentMethods: { id: PaymentMethod; label: string; desc: string; emoji: s
 export default function CheckoutModal({ open, onClose, book }: CheckoutModalProps) {
   const { toast } = useToast();
   const [step, setStep] = useState<"form" | "payment">("form");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("sslcommerz");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paystation");
   const [coupon, setCoupon] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(0);
