@@ -1,4 +1,4 @@
-import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut, MessageSquare, Mail } from "lucide-react";
+import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut, MessageSquare, Mail, Settings } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +22,7 @@ const items = [
   { title: "অর্ডার", url: "/admin/orders", icon: ShoppingCart },
   { title: "কুপন", url: "/admin/coupons", icon: Tag },
   { title: "সাবস্ক্রাইবার", url: "/admin/subscribers", icon: Mail },
+  { title: "সেটিংস", url: "/admin/settings", icon: Settings },
 ];
 
 export function AdminSidebar() {
