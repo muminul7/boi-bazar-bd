@@ -14,16 +14,248 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      books: {
+        Row: {
+          active: boolean | null
+          author: string
+          best_seller: boolean | null
+          category: string | null
+          chapters: Json | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          faq: Json | null
+          featured: boolean | null
+          file_url: string | null
+          format: string | null
+          id: string
+          language: string | null
+          new_release: boolean | null
+          original_price: number | null
+          outcomes: string[] | null
+          pages: number | null
+          price: number
+          published_date: string | null
+          rating: number | null
+          review_count: number | null
+          reviews: Json | null
+          short_description: string | null
+          slug: string
+          subtitle: string | null
+          suitable_for: string[] | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean | null
+          author: string
+          best_seller?: boolean | null
+          category?: string | null
+          chapters?: Json | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          faq?: Json | null
+          featured?: boolean | null
+          file_url?: string | null
+          format?: string | null
+          id?: string
+          language?: string | null
+          new_release?: boolean | null
+          original_price?: number | null
+          outcomes?: string[] | null
+          pages?: number | null
+          price?: number
+          published_date?: string | null
+          rating?: number | null
+          review_count?: number | null
+          reviews?: Json | null
+          short_description?: string | null
+          slug: string
+          subtitle?: string | null
+          suitable_for?: string[] | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean | null
+          author?: string
+          best_seller?: boolean | null
+          category?: string | null
+          chapters?: Json | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          faq?: Json | null
+          featured?: boolean | null
+          file_url?: string | null
+          format?: string | null
+          id?: string
+          language?: string | null
+          new_release?: boolean | null
+          original_price?: number | null
+          outcomes?: string[] | null
+          pages?: number | null
+          price?: number
+          published_date?: string | null
+          rating?: number | null
+          review_count?: number | null
+          reviews?: Json | null
+          short_description?: string | null
+          slug?: string
+          subtitle?: string | null
+          suitable_for?: string[] | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      coupons: {
+        Row: {
+          active: boolean | null
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          used_count: number | null
+        }
+        Insert: {
+          active?: boolean | null
+          code: string
+          created_at?: string
+          discount_type: string
+          discount_value: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          used_count?: number | null
+        }
+        Update: {
+          active?: boolean | null
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          used_count?: number | null
+        }
+        Relationships: []
+      }
+      orders: {
+        Row: {
+          amount: number
+          billing_address: string | null
+          book_id: string | null
+          coupon_code: string | null
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          delivery_email_sent: boolean | null
+          discount: number | null
+          download_count: number | null
+          download_expires_at: string | null
+          download_token: string | null
+          id: string
+          max_downloads: number | null
+          payment_method: string | null
+          payment_status: string | null
+          transaction_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          billing_address?: string | null
+          book_id?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          delivery_email_sent?: boolean | null
+          discount?: number | null
+          download_count?: number | null
+          download_expires_at?: string | null
+          download_token?: string | null
+          id?: string
+          max_downloads?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          billing_address?: string | null
+          book_id?: string | null
+          coupon_code?: string | null
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          delivery_email_sent?: boolean | null
+          discount?: number | null
+          download_count?: number | null
+          download_expires_at?: string | null
+          download_token?: string | null
+          id?: string
+          max_downloads?: number | null
+          payment_method?: string | null
+          payment_status?: string | null
+          transaction_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +382,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
