@@ -86,8 +86,9 @@ export default function ContactPage() {
                   <Label className="font-bengali text-sm mb-1.5 block">বার্তা *</Label>
                   <Textarea value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })} placeholder="আপনার বার্তা লিখুন..." rows={5} className="font-bengali" required />
                 </div>
-                <Button type="submit" className="w-full gap-2 bg-primary hover:bg-primary-light text-primary-foreground font-bengali shadow-teal py-5">
-                  <Send className="h-4 w-4" /> বার্তা পাঠান
+                <Button type="submit" className="w-full gap-2 bg-primary hover:bg-primary-light text-primary-foreground font-bengali shadow-teal py-5" disabled={sending}>
+                  {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  {sending ? "পাঠানো হচ্ছে..." : "বার্তা পাঠান"}
                 </Button>
               </form>
             </div>
