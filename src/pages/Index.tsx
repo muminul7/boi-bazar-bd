@@ -133,7 +133,7 @@ export default function HomePage() {
               <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
                 <Link to="/books">
                   <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-10 py-6 rounded-xl">
-                    বই দেখুন <ArrowRight className="h-5 w-5" />
+                    <span className="font-bold">বই দেখুন</span> <ArrowRight className="h-5 w-5" />
                   </Button>
                 </Link>
               </motion.div>
