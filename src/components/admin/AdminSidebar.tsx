@@ -1,4 +1,4 @@
-import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut } from "lucide-react";
+import { BookOpen, ShoppingCart, Tag, LayoutDashboard, LogOut, BarChart3 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
