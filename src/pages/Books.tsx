@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
-import { Search, SlidersHorizontal, X, Star, TrendingUp, Zap } from "lucide-react";
-import { books, categories } from "@/data/books";
+import { Search, SlidersHorizontal, X, TrendingUp, Zap } from "lucide-react";
+import { useBooks } from "@/hooks/useBooks";
 import BookCard from "@/components/BookCard";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -8,13 +8,18 @@ import { Button } from "@/components/ui/button";
 type FilterType = "all" | "bestseller" | "newest" | "price-low" | "price-high";
 
 export default function BooksPage() {
+  const { data: books = [], isLoading } = useBooks();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("সব বই");
   const [filter, setFilter] = useState<FilterType>("all");
 
+  const categories = useMemo(() => {
+    const cats = new Set(books.map((b) => b.category).filter(Boolean));
+    return ["সব বই", ...Array.from(cats)];
+  }, [books]);
+
   const filtered = useMemo(() => {
     let result = [...books];
-    // Search
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -25,11 +30,9 @@ export default function BooksPage() {
           b.tags.some((t) => t.toLowerCase().includes(q))
       );
     }
-    // Category
     if (selectedCategory !== "সব বই") {
       result = result.filter((b) => b.category === selectedCategory);
     }
-    // Sort
     switch (filter) {
       case "bestseller":
         result = result.filter((b) => b.bestSeller);
@@ -45,7 +48,7 @@ export default function BooksPage() {
         break;
     }
     return result;
-  }, [search, selectedCategory, filter]);
+  }, [books, search, selectedCategory, filter]);
 
   const filterOptions: { key: FilterType; label: string; icon?: React.ReactNode }[] = [
     { key: "all", label: "সব" },
@@ -57,7 +60,6 @@ export default function BooksPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <div className="bg-gradient-hero py-12">
         <div className="container mx-auto text-center">
           <p className="text-sm font-bengali mb-2 text-gold font-semibold">প্রিমিয়াম সংগ্রহ</p>
@@ -69,9 +71,7 @@ export default function BooksPage() {
       </div>
 
       <div className="container mx-auto py-10">
-        {/* Search + Filter Bar */}
         <div className="flex flex-col md:flex-row gap-4 mb-8">
-          {/* Search */}
           <div className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -81,15 +81,11 @@ export default function BooksPage() {
               className="pl-10 font-bengali bg-card border-border focus:border-primary"
             />
             {search && (
-              <button
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              >
+              <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                 <X className="h-4 w-4" />
               </button>
             )}
           </div>
-          {/* Sort filters */}
           <div className="flex gap-2 flex-wrap">
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground font-bengali">
               <SlidersHorizontal className="h-4 w-4" />
@@ -112,7 +108,6 @@ export default function BooksPage() {
           </div>
         </div>
 
-        {/* Category Tabs */}
         <div className="flex gap-2 flex-wrap mb-8 pb-3 border-b border-border">
           {categories.map((cat) => (
             <button
@@ -129,13 +124,15 @@ export default function BooksPage() {
           ))}
         </div>
 
-        {/* Results count */}
         <p className="text-sm text-muted-foreground font-bengali mb-6">
           {filtered.length} টি বই পাওয়া গেছে
         </p>
 
-        {/* Grid */}
-        {filtered.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-20">
+            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((book) => (
               <BookCard key={book.id} book={book} />
