@@ -11,33 +11,33 @@ import { useToast } from "@/hooks/use-toast";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: (i: number = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } }),
+  visible: (i: number = 0) => ({ opacity: 1, y: 0, transition: { delay: i * 0.1, duration: 0.6, ease: [0.25, 0.1, 0.25, 1] } })
 };
 
 const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 
 const stats = [
-  { value: "৫,০০০+", label: "উদ্যোক্তা", icon: Users },
-  { value: "১৫+", label: "প্র্যাকটিক্যাল গাইড", icon: BookOpen },
-  { value: "৯৮%", label: "পাঠক সন্তুষ্ট", icon: TrendingUp },
-  { value: "৭ দিন", label: "মানি-ব্যাক গ্যারান্টি", icon: Shield },
-];
+{ value: "৫,০০০+", label: "উদ্যোক্তা", icon: Users },
+{ value: "১৫+", label: "প্র্যাকটিক্যাল গাইড", icon: BookOpen },
+{ value: "৯৮%", label: "পাঠক সন্তুষ্ট", icon: TrendingUp },
+{ value: "৭ দিন", label: "মানি-ব্যাক গ্যারান্টি", icon: Shield }];
+
 
 const benefits = [
-  { icon: BookOpen, title: "বিশেষজ্ঞের অভিজ্ঞতা", desc: "বাস্তব সফল উদ্যোক্তাদের কাছ থেকে শেখা জ্ঞান, শুধু থিওরি নয়।", color: "bg-primary/10 text-primary" },
-  { icon: Zap, title: "তাৎক্ষণিক ডেলিভারি", desc: "পেমেন্ট করার সাথে সাথেই ইমেইলে PDF পাবেন। দেরি নেই।", color: "bg-secondary/10 text-secondary" },
-  { icon: TrendingUp, title: "প্রমাণিত কৌশল", desc: "বাংলাদেশের বাজারে পরীক্ষিত এবং কার্যকর ব্যবসায়িক কৌশল।", color: "bg-primary/10 text-primary" },
-  { icon: Shield, title: "৭ দিনের গ্যারান্টি", desc: "সন্তুষ্ট না হলে সম্পূর্ণ টাকা ফেরত। কোনো প্রশ্ন নেই।", color: "bg-destructive/10 text-destructive" },
-  { icon: Users, title: "কমিউনিটি সাপোর্ট", desc: "প্রাইভেট Facebook গ্রুপে বিশেষজ্ঞদের সাথে যোগাযোগ করুন।", color: "bg-secondary/10 text-secondary" },
-  { icon: Download, title: "আপডেট বিনামূল্যে", desc: "একবার কিনলেই পরবর্তী সব আপডেট বিনামূল্যে পাবেন।", color: "bg-primary/10 text-primary" },
-];
+{ icon: BookOpen, title: "বিশেষজ্ঞের অভিজ্ঞতা", desc: "বাস্তব সফল উদ্যোক্তাদের কাছ থেকে শেখা জ্ঞান, শুধু থিওরি নয়।", color: "bg-primary/10 text-primary" },
+{ icon: Zap, title: "তাৎক্ষণিক ডেলিভারি", desc: "পেমেন্ট করার সাথে সাথেই ইমেইলে PDF পাবেন। দেরি নেই।", color: "bg-secondary/10 text-secondary" },
+{ icon: TrendingUp, title: "প্রমাণিত কৌশল", desc: "বাংলাদেশের বাজারে পরীক্ষিত এবং কার্যকর ব্যবসায়িক কৌশল।", color: "bg-primary/10 text-primary" },
+{ icon: Shield, title: "৭ দিনের গ্যারান্টি", desc: "সন্তুষ্ট না হলে সম্পূর্ণ টাকা ফেরত। কোনো প্রশ্ন নেই।", color: "bg-destructive/10 text-destructive" },
+{ icon: Users, title: "কমিউনিটি সাপোর্ট", desc: "প্রাইভেট Facebook গ্রুপে বিশেষজ্ঞদের সাথে যোগাযোগ করুন।", color: "bg-secondary/10 text-secondary" },
+{ icon: Download, title: "আপডেট বিনামূল্যে", desc: "একবার কিনলেই পরবর্তী সব আপডেট বিনামূল্যে পাবেন।", color: "bg-primary/10 text-primary" }];
+
 
 const steps = [
-  { num: "১", title: "বই বেছে নিন", desc: "আপনার প্রয়োজন অনুযায়ী সেরা গাইড বাছাই করুন" },
-  { num: "২", title: "পেমেন্ট করুন", desc: "বিকাশ, নগদ, কার্ড — যেকোনো পদ্ধতিতে পে করুন" },
-  { num: "৩", title: "ডাউনলোড করুন", desc: "ইমেইলে তাৎক্ষণিক ডাউনলোড লিংক পান" },
-  { num: "৪", title: "সফল হন", desc: "প্রমাণিত কৌশল প্রয়োগ করে আয় শুরু করুন" },
-];
+{ num: "১", title: "বই বেছে নিন", desc: "আপনার প্রয়োজন অনুযায়ী সেরা গাইড বাছাই করুন" },
+{ num: "২", title: "পেমেন্ট করুন", desc: "বিকাশ, নগদ, কার্ড — যেকোনো পদ্ধতিতে পে করুন" },
+{ num: "৩", title: "ডাউনলোড করুন", desc: "ইমেইলে তাৎক্ষণিক ডাউনলোড লিংক পান" },
+{ num: "৪", title: "সফল হন", desc: "প্রমাণিত কৌশল প্রয়োগ করে আয় শুরু করুন" }];
+
 
 export default function HomePage() {
   const { data: books = [] } = useBooks();
@@ -49,25 +49,25 @@ export default function HomePage() {
   }, [books]);
 
   // Fetch testimonials from DB
-  const [testimonials, setTestimonials] = useState<{ name: string; role: string; rating: number; text: string; avatar: string }[]>([]);
+  const [testimonials, setTestimonials] = useState<{name: string;role: string;rating: number;text: string;avatar: string;}[]>([]);
   useEffect(() => {
-    supabase
-      .from("testimonials")
-      .select("*")
-      .eq("active", true)
-      .order("sort_order", { ascending: true })
-      .limit(6)
-      .then(({ data }) => {
-        setTestimonials(
-          (data || []).map((t: any) => ({
-            name: t.name,
-            role: t.role || "",
-            rating: t.rating,
-            text: t.text,
-            avatar: t.avatar || t.name?.charAt(0) || "?",
-          }))
-        );
-      });
+    supabase.
+    from("testimonials").
+    select("*").
+    eq("active", true).
+    order("sort_order", { ascending: true }).
+    limit(6).
+    then(({ data }) => {
+      setTestimonials(
+        (data || []).map((t: any) => ({
+          name: t.name,
+          role: t.role || "",
+          rating: t.rating,
+          text: t.text,
+          avatar: t.avatar || t.name?.charAt(0) || "?"
+        }))
+      );
+    });
   }, []);
 
   const [email, setEmail] = useState("");
@@ -116,7 +116,7 @@ export default function HomePage() {
                 <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
               <motion.h1 variants={fadeUp} custom={1} className="font-bold font-bengali mb-8">
-                <span className="block text-3xl md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4">যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।</span>
+                <span className="block md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4 text-2xl font-medium">যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।</span>
                 <span className="relative inline-block">
                   <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-extrabold">যে শেখা চালিয়ে যায়,</span>
                 </span>
@@ -138,8 +138,8 @@ export default function HomePage() {
                 </Link>
               </motion.div>
               <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center gap-6 lg:gap-10">
-                {stats.slice(0, 3).map((s, i) => (
-                  <div key={s.label} className="flex items-center gap-3">
+                {stats.slice(0, 3).map((s, i) =>
+                <div key={s.label} className="flex items-center gap-3">
                     <div className="h-11 w-11 rounded-xl glass flex items-center justify-center">
                       <s.icon className="h-5 w-5 text-gold" />
                     </div>
@@ -149,7 +149,7 @@ export default function HomePage() {
                     </div>
                     {i < 2 && <div className="hidden lg:block h-8 w-px bg-white/15 ml-4" />}
                   </div>
-                ))}
+                )}
               </motion.div>
             </motion.div>
           </div>
@@ -160,22 +160,22 @@ export default function HomePage() {
       <section className="relative -mt-1 bg-card border-y border-border">
         <div className="container mx-auto py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((s, i) => (
-              <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center flex flex-col items-center gap-2">
+            {stats.map((s, i) =>
+            <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-1">
                   <s.icon className="h-5 w-5 text-primary" />
                 </div>
                 <div className="text-2xl font-bold font-body text-foreground">{s.value}</div>
                 <div className="text-sm font-bengali text-muted-foreground">{s.label}</div>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
       </section>
 
       {/* ─── FEATURED BOOKS ─── */}
-      {featuredBooks.length > 0 && (
-        <section className="section-py bg-background">
+      {featuredBooks.length > 0 &&
+      <section className="section-py bg-background">
           <div className="container mx-auto">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
               <motion.p variants={fadeUp} className="text-sm font-semibold text-primary font-bengali mb-2 tracking-wide uppercase">বিশেষ সংগ্রহ</motion.p>
@@ -184,19 +184,19 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex flex-wrap gap-2 justify-center mb-10">
-              {categories.slice(0, 6).map((cat) => (
-                <Link key={cat} to={cat === "সব বই" ? "/books" : `/books?category=${encodeURIComponent(cat)}`} className="badge-pill bg-card text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer border border-border hover:border-primary hover:shadow-teal">
+              {categories.slice(0, 6).map((cat) =>
+            <Link key={cat} to={cat === "সব বই" ? "/books" : `/books?category=${encodeURIComponent(cat)}`} className="badge-pill bg-card text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer border border-border hover:border-primary hover:shadow-teal">
                   {cat}
                 </Link>
-              ))}
+            )}
             </motion.div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-              {featuredBooks.map((book, i) => (
-                <motion.div key={book.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}>
+              {featuredBooks.map((book, i) =>
+            <motion.div key={book.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}>
                   <BookCard book={book} />
                 </motion.div>
-              ))}
+            )}
             </div>
 
             <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-12">
@@ -208,7 +208,7 @@ export default function HomePage() {
             </motion.div>
           </div>
         </section>
-      )}
+      }
 
       {/* ─── HOW IT WORKS ─── */}
       <section id="how-it-works" className="section-py bg-card border-y border-border">
@@ -218,8 +218,8 @@ export default function HomePage() {
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-foreground">কিভাবে কাজ করে?</motion.h2>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15 }} className="relative text-center group">
+            {steps.map((step, i) =>
+            <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15 }} className="relative text-center group">
                 <div className="relative inline-flex mb-5">
                   <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold font-body shadow-teal group-hover:scale-110 transition-transform">
                     {step.num}
@@ -229,7 +229,7 @@ export default function HomePage() {
                 <h3 className="font-bengali font-bold text-foreground text-lg mb-2">{step.title}</h3>
                 <p className="text-muted-foreground font-bengali text-sm">{step.desc}</p>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -242,41 +242,41 @@ export default function HomePage() {
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-foreground mb-4">আমাদের সুবিধাসমূহ</motion.h2>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {benefits.map((b, i) => (
-              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} className="bg-card rounded-2xl p-7 border border-border shadow-brand-sm hover:shadow-brand-lg transition-all duration-300 hover-lift group">
+            {benefits.map((b, i) =>
+            <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} className="bg-card rounded-2xl p-7 border border-border shadow-brand-sm hover:shadow-brand-lg transition-all duration-300 hover-lift group">
                 <div className={`flex h-14 w-14 items-center justify-center rounded-2xl mb-5 ${b.color} transition-transform group-hover:scale-110`}>
                   <b.icon className="h-7 w-7" />
                 </div>
                 <h3 className="font-bengali font-bold text-foreground text-lg mb-2">{b.title}</h3>
                 <p className="text-muted-foreground font-bengali text-sm leading-relaxed">{b.desc}</p>
               </motion.div>
-            ))}
+            )}
           </div>
         </div>
       </section>
 
       {/* ─── BESTSELLERS ─── */}
-      {bestSellers.length > 0 && (
-        <section className="section-py bg-card border-y border-border">
+      {bestSellers.length > 0 &&
+      <section className="section-py bg-card border-y border-border">
           <div className="container mx-auto">
             <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
               <motion.p variants={fadeUp} className="text-sm font-semibold text-gold font-bengali mb-2">🏆 পাঠকদের পছন্দ</motion.p>
               <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-foreground">বেস্টসেলার বই</motion.h2>
             </motion.div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
-              {bestSellers.map((book, i) => (
-                <motion.div key={book.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
+              {bestSellers.map((book, i) =>
+            <motion.div key={book.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
                   <BookCard book={book} />
                 </motion.div>
-              ))}
+            )}
             </div>
           </div>
         </section>
-      )}
+      }
 
       {/* ─── TESTIMONIALS ─── */}
-      {testimonials.length > 0 && (
-        <section className="section-py bg-gradient-hero relative overflow-hidden">
+      {testimonials.length > 0 &&
+      <section className="section-py bg-gradient-hero relative overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
             <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
           </div>
@@ -286,13 +286,13 @@ export default function HomePage() {
               <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-primary-foreground">পাঠকরা কী বলছেন</motion.h2>
             </motion.div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {testimonials.map((t, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15, duration: 0.5 }} className="bg-card rounded-2xl p-7 shadow-brand-xl relative group hover-lift">
+              {testimonials.map((t, i) =>
+            <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15, duration: 0.5 }} className="bg-card rounded-2xl p-7 shadow-brand-xl relative group hover-lift">
                   <Quote className="absolute top-5 right-5 h-8 w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
                   <div className="flex items-center gap-0.5 mb-4">
-                    {[...Array(t.rating)].map((_, j) => (
-                      <Star key={j} className="h-4 w-4 text-gold fill-current" />
-                    ))}
+                    {[...Array(t.rating)].map((_, j) =>
+                <Star key={j} className="h-4 w-4 text-gold fill-current" />
+                )}
                   </div>
                   <p className="font-bengali text-sm leading-relaxed text-muted-foreground mb-6">"{t.text}"</p>
                   <div className="flex items-center gap-3 pt-4 border-t border-border">
@@ -305,11 +305,11 @@ export default function HomePage() {
                     </div>
                   </div>
                 </motion.div>
-              ))}
+            )}
             </div>
           </div>
         </section>
-      )}
+      }
 
       {/* ─── SOCIAL PROOF BANNER ─── */}
       <section className="bg-secondary py-6">
@@ -368,6 +368,6 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 }
