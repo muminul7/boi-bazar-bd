@@ -14,9 +14,9 @@ const fadeUp: Variants = {
 const stagger = { visible: { transition: { staggerChildren: 0.1 } } };
 
 const stats = [
-  { value: "৫,০০০+", label: "সন্তুষ্ট পাঠক", icon: Users },
-  { value: "১৫+", label: "প্রিমিয়াম বই", icon: BookOpen },
-  { value: "৯৮%", label: "সাফল্যের হার", icon: TrendingUp },
+  { value: "৫,০০০+", label: "উদ্যোক্তা", icon: Users },
+  { value: "১৫+", label: "প্র্যাকটিক্যাল গাইড", icon: BookOpen },
+  { value: "৯৮%", label: "পাঠক সন্তুষ্ট", icon: TrendingUp },
   { value: "৭ দিন", label: "মানি-ব্যাক গ্যারান্টি", icon: Shield },
 ];
 
@@ -63,22 +63,21 @@ export default function HomePage() {
             <motion.div initial="hidden" animate="visible" variants={stagger} className="text-primary-foreground">
               <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-6 rounded-full px-5 py-2 text-sm font-bengali glass">
                 <Sparkles className="h-4 w-4 text-gold" />
-                <span>বাংলাদেশের #১ ই-বুক স্টোর</span>
+                <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
 
               <motion.h1 variants={fadeUp} custom={1} className="text-4xl lg:text-5xl xl:text-[3.5rem] font-bold font-bengali leading-[1.2] mb-6">
-                আপনার ই-কমার্স ব্যবসাকে{" "}
+                সমস্যার সমাধান খুঁজুন,{" "}
                 <span className="relative inline-block">
-                  <span className="text-gradient-gold">পরবর্তী স্তরে</span>
+                  <span className="text-gradient-gold">ব্যবসাকে এগিয়ে নিন</span>
                   <svg className="absolute -bottom-2 left-0 w-full" viewBox="0 0 200 8" fill="none">
                     <path d="M1 5.5C40 2 80 1 100 3C120 5 160 6 199 2.5" stroke="hsl(39, 88%, 52%)" strokeWidth="2.5" strokeLinecap="round" />
                   </svg>
-                </span>{" "}
-                নিয়ে যান
+                </span>
               </motion.h1>
 
               <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-8 opacity-85">
-                বাংলাদেশের শীর্ষ উদ্যোক্তাদের তৈরি প্রিমিয়াম গাইড। শূন্য থেকে শুরু করে মাসে লক্ষ টাকা আয়ের রোডম্যাপ।
+                মার্কেটিং, বিজনেস অটোমেশন, AI, স্কেলিং — সব ধরনের উদ্যোক্তাদের জন্য তৈরি প্র্যাকটিক্যাল গাইড।
               </motion.p>
 
               <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-3">
@@ -156,7 +155,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="text-lg font-bold font-body text-foreground">৫,০০০+</div>
-                    <div className="text-xs text-muted-foreground font-bengali">ডাউনলোড</div>
+                    <div className="text-xs text-muted-foreground font-bengali">সব ধরনের উদ্যোক্তাদের জন্য</div>
                   </div>
                 </div>
               </motion.div>
