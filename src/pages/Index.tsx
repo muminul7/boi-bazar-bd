@@ -77,7 +77,7 @@ export default function HomePage() {
               </motion.h1>
 
               <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-8 opacity-85">
-                বাংলাদেশের শীর্ষ উদ্যোক্তাদের তৈরি প্রিমিয়াম গাইড। শূন্য থেকে শুরু করে মাসে লক্ষ টাকা আয়ের রোডম্যাপ।
+                মার্কেটিং, বিজনেস অটোমেশন, AI, স্কেলিং — সব ধরনের উদ্যোক্তাদের জন্য তৈরি প্র্যাকটিক্যাল গাইড।
               </motion.p>
 
               <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-3">
