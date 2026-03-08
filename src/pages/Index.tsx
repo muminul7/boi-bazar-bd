@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, CheckCircle, Star, Shield, Zap, TrendingUp, Users, Sparkles, Download, Heart, Quote, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { books, categories } from "@/data/books";
+import { useBooks } from "@/hooks/useBooks";
 import BookCard from "@/components/BookCard";
 import heroIllustration from "@/assets/hero-illustration.jpg";
 import { motion, type Variants } from "framer-motion";
@@ -32,12 +32,6 @@ const benefits = [
   { icon: Download, title: "আপডেট বিনামূল্যে", desc: "একবার কিনলেই পরবর্তী সব আপডেট বিনামূল্যে পাবেন।", color: "bg-primary/10 text-primary" },
 ];
 
-const testimonials = [
-  { name: "তানভীর হাসান", role: "ফ্যাশন ই-কমার্স মালিক, ঢাকা", rating: 5, text: "এই বইগুলো আমার ব্যবসাকে আমূল বদলে দিয়েছে। প্রথম মাসেই বিক্রি ৩ গুণ বেড়েছে।", avatar: "ত" },
-  { name: "সুমাইয়া বেগম", role: "অনলাইন উদ্যোক্তা, চট্টগ্রাম", rating: 5, text: "গৃহিণী হয়েও এখন মাসে ৮০,০০০ টাকা আয় করছি। সব কিছু এই বই থেকে শেখা।", avatar: "সু" },
-  { name: "রাহুল দাস", role: "ড্রপশিপিং উদ্যোক্তা, সিলেট", rating: 5, text: "মাত্র ৩ মাসে ১ লক্ষ টাকা আয়ের স্বপ্ন বাস্তবে পরিণত হয়েছে। অবিশ্বাস্য!", avatar: "রা" },
-];
-
 const steps = [
   { num: "১", title: "বই বেছে নিন", desc: "আপনার প্রয়োজন অনুযায়ী সেরা গাইড বাছাই করুন" },
   { num: "২", title: "পেমেন্ট করুন", desc: "বিকাশ, নগদ, কার্ড — যেকোনো পদ্ধতিতে পে করুন" },
@@ -46,8 +40,33 @@ const steps = [
 ];
 
 export default function HomePage() {
-  const featuredBooks = books.filter((b) => b.featured);
-  const bestSellers = books.filter((b) => b.bestSeller);
+  const { data: books = [] } = useBooks();
+  const featuredBooks = useMemo(() => books.filter((b) => b.featured), [books]);
+  const bestSellers = useMemo(() => books.filter((b) => b.bestSeller), [books]);
+  const categories = useMemo(() => {
+    const cats = new Set(books.map((b) => b.category).filter(Boolean));
+    return ["সব বই", ...Array.from(cats)];
+  }, [books]);
+
+  // Collect all reviews from all books for testimonials
+  const testimonials = useMemo(() => {
+    const allReviews: { name: string; role: string; rating: number; text: string; avatar: string }[] = [];
+    books.forEach((book) => {
+      (book.reviews || []).forEach((r) => {
+        if (r.rating >= 4 && r.text) {
+          allReviews.push({
+            name: r.name,
+            role: `পাঠক — ${book.title}`,
+            rating: r.rating,
+            text: r.text,
+            avatar: r.name ? r.name.charAt(0) : "?",
+          });
+        }
+      });
+    });
+    return allReviews.slice(0, 3);
+  }, [books]);
+
   const [email, setEmail] = useState("");
   const [subscribing, setSubscribing] = useState(false);
   const { toast } = useToast();
@@ -77,16 +96,9 @@ export default function HomePage() {
     <div className="min-h-screen overflow-hidden">
       {/* ─── HERO ─── */}
       <section className="relative overflow-hidden bg-gradient-hero min-h-[90vh] flex items-center">
-        {/* Subtle grid pattern */}
         <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "linear-gradient(hsl(0,0%,100%) 1px, transparent 1px), linear-gradient(90deg, hsl(0,0%,100%) 1px, transparent 1px)", backgroundSize: "50px 50px" }} />
-        
-        {/* Diagonal lines texture */}
         <div className="absolute inset-0 opacity-[0.025]" style={{ backgroundImage: "repeating-linear-gradient(45deg, hsl(0,0%,100%) 0, hsl(0,0%,100%) 1px, transparent 1px, transparent 30px)" }} />
-
-        {/* Dot pattern */}
         <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(0,0%,100%) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-        
-        {/* Glow orbs */}
         <div className="absolute inset-0 overflow-hidden">
           <div className="absolute top-1/4 left-1/4 h-[600px] w-[600px] rounded-full opacity-[0.1]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 60%)" }} />
           <div className="absolute bottom-0 right-0 h-[500px] w-[500px] rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, hsl(174, 65%, 60%), transparent 60%)" }} />
@@ -95,54 +107,26 @@ export default function HomePage() {
 
         <div className="container mx-auto py-20 lg:py-28 relative z-10">
           <div className="flex flex-col items-center text-primary-foreground max-w-3xl mx-auto">
-            {/* Left: Text content */}
             <motion.div initial="hidden" animate="visible" variants={stagger} className="text-center">
-              
-              {/* Badge */}
               <motion.div variants={fadeUp} custom={0} className="inline-flex items-center gap-2 mb-8 rounded-full px-5 py-2.5 text-sm font-bengali glass">
                 <Sparkles className="h-4 w-4 text-gold" />
                 <span>জ্ঞান যখন আপনার সবচেয়ে বড় সম্পদ</span>
               </motion.div>
-
-              {/* Headline */}
               <motion.h1 variants={fadeUp} custom={1} className="font-bold font-bengali mb-8">
-                <span className="block text-3xl md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4">
-                  যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।
-                </span>
+                <span className="block text-3xl md:text-4xl lg:text-4xl xl:text-5xl leading-tight opacity-90 mb-4">যে শেখা বন্ধ করে, সে পিছিয়ে পড়ে।</span>
                 <span className="relative inline-block">
-                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-extrabold">
-                    যে শেখা চালিয়ে যায়,
-                  </span>
+                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-extrabold">যে শেখা চালিয়ে যায়,</span>
                 </span>
                 <span className="relative inline-block mt-1">
-                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-extrabold">
-                    সে এগিয়ে যায়।
-                  </span>
-                  <motion.svg 
-                    initial={{ pathLength: 0, opacity: 0 }} 
-                    animate={{ pathLength: 1, opacity: 1 }} 
-                    transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
-                    className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 10" fill="none"
-                  >
-                    <motion.path 
-                      d="M2 7C50 3 100 2 150 4C200 6 250 5 298 3" 
-                      stroke="hsl(39, 88%, 52%)" 
-                      strokeWidth="3" 
-                      strokeLinecap="round"
-                      initial={{ pathLength: 0 }}
-                      animate={{ pathLength: 1 }}
-                      transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
-                    />
+                  <span className="block text-4xl md:text-5xl lg:text-5xl xl:text-6xl text-gradient-gold leading-tight font-extrabold">সে এগিয়ে যায়।</span>
+                  <motion.svg initial={{ pathLength: 0, opacity: 0 }} animate={{ pathLength: 1, opacity: 1 }} transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }} className="absolute -bottom-2 left-0 w-full h-3" viewBox="0 0 300 10" fill="none">
+                    <motion.path d="M2 7C50 3 100 2 150 4C200 6 250 5 298 3" stroke="hsl(39, 88%, 52%)" strokeWidth="3" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }} />
                   </motion.svg>
                 </span>
               </motion.h1>
-
-              {/* Subheadline */}
               <motion.p variants={fadeUp} custom={2} className="text-lg lg:text-xl font-bengali leading-relaxed mb-10 opacity-80 max-w-2xl mx-auto">
                 মার্কেটিং, বিজনেস অটোমেশন, AI, স্কেলিং — সব ধরনের উদ্যোক্তাদের জন্য তৈরি প্র্যাকটিক্যাল গাইড।
               </motion.p>
-
-              {/* CTAs */}
               <motion.div variants={fadeUp} custom={3} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
                 <Link to="/books">
                   <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-base shadow-gold px-10 py-6 rounded-xl">
@@ -150,8 +134,6 @@ export default function HomePage() {
                   </Button>
                 </Link>
               </motion.div>
-
-              {/* Trust stats */}
               <motion.div variants={fadeUp} custom={4} className="flex flex-wrap justify-center gap-6 lg:gap-10">
                 {stats.slice(0, 3).map((s, i) => (
                   <div key={s.label} className="flex items-center gap-3">
@@ -166,9 +148,7 @@ export default function HomePage() {
                   </div>
                 ))}
               </motion.div>
-
             </motion.div>
-
           </div>
         </div>
       </section>
@@ -178,14 +158,7 @@ export default function HomePage() {
         <div className="container mx-auto py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {stats.map((s, i) => (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center flex flex-col items-center gap-2"
-              >
+              <motion.div key={s.label} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }} className="text-center flex flex-col items-center gap-2">
                 <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-1">
                   <s.icon className="h-5 w-5 text-primary" />
                 </div>
@@ -198,50 +171,41 @@ export default function HomePage() {
       </section>
 
       {/* ─── FEATURED BOOKS ─── */}
-      <section className="section-py bg-background">
-        <div className="container mx-auto">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
-            <motion.p variants={fadeUp} className="text-sm font-semibold text-primary font-bengali mb-2 tracking-wide uppercase">বিশেষ সংগ্রহ</motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-foreground mb-4">ফিচার্ড বই সমূহ</motion.h2>
-            <motion.p variants={fadeUp} custom={2} className="text-muted-foreground font-bengali max-w-xl mx-auto text-lg">আমাদের পাঠকদের সবচেয়ে প্রিয় এবং সর্বাধিক বিক্রিত বইগুলো</motion.p>
-          </motion.div>
+      {featuredBooks.length > 0 && (
+        <section className="section-py bg-background">
+          <div className="container mx-auto">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
+              <motion.p variants={fadeUp} className="text-sm font-semibold text-primary font-bengali mb-2 tracking-wide uppercase">বিশেষ সংগ্রহ</motion.p>
+              <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-foreground mb-4">ফিচার্ড বই সমূহ</motion.h2>
+              <motion.p variants={fadeUp} custom={2} className="text-muted-foreground font-bengali max-w-xl mx-auto text-lg">আমাদের পাঠকদের সবচেয়ে প্রিয় এবং সর্বাধিক বিক্রিত বইগুলো</motion.p>
+            </motion.div>
 
-          {/* Category chips */}
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex flex-wrap gap-2 justify-center mb-10">
-            {categories.slice(0, 6).map((cat) => (
-              <Link
-                key={cat}
-                to={cat === "সব বই" ? "/books" : `/books?category=${encodeURIComponent(cat)}`}
-                className="badge-pill bg-card text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer border border-border hover:border-primary hover:shadow-teal"
-              >
-                {cat}
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="flex flex-wrap gap-2 justify-center mb-10">
+              {categories.slice(0, 6).map((cat) => (
+                <Link key={cat} to={cat === "সব বই" ? "/books" : `/books?category=${encodeURIComponent(cat)}`} className="badge-pill bg-card text-muted-foreground hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer border border-border hover:border-primary hover:shadow-teal">
+                  {cat}
+                </Link>
+              ))}
+            </motion.div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
+              {featuredBooks.map((book, i) => (
+                <motion.div key={book.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1, duration: 0.5 }}>
+                  <BookCard book={book} />
+                </motion.div>
+              ))}
+            </div>
+
+            <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-12">
+              <Link to="/books">
+                <Button size="lg" variant="outline" className="gap-2.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bengali px-8 py-6 rounded-xl transition-all">
+                  সব বই দেখুন <ArrowRight className="h-5 w-5" />
+                </Button>
               </Link>
-            ))}
-          </motion.div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
-            {featuredBooks.map((book, i) => (
-              <motion.div
-                key={book.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1, duration: 0.5 }}
-              >
-                <BookCard book={book} />
-              </motion.div>
-            ))}
+            </motion.div>
           </div>
-
-          <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} className="text-center mt-12">
-            <Link to="/books">
-              <Button size="lg" variant="outline" className="gap-2.5 border-primary text-primary hover:bg-primary hover:text-primary-foreground font-bengali px-8 py-6 rounded-xl transition-all">
-                সব বই দেখুন <ArrowRight className="h-5 w-5" />
-              </Button>
-            </Link>
-          </motion.div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* ─── HOW IT WORKS ─── */}
       <section id="how-it-works" className="section-py bg-card border-y border-border">
@@ -250,25 +214,15 @@ export default function HomePage() {
             <motion.p variants={fadeUp} className="text-sm font-semibold text-secondary font-bengali mb-2">সহজ ৪ ধাপ</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-foreground">কিভাবে কাজ করে?</motion.h2>
           </motion.div>
-
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {steps.map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="relative text-center group"
-              >
+              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15 }} className="relative text-center group">
                 <div className="relative inline-flex mb-5">
                   <div className="h-16 w-16 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground text-2xl font-bold font-body shadow-teal group-hover:scale-110 transition-transform">
                     {step.num}
                   </div>
                 </div>
-                {i < steps.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] border-t-2 border-dashed border-border" />
-                )}
+                {i < steps.length - 1 && <div className="hidden lg:block absolute top-8 left-[60%] w-[80%] border-t-2 border-dashed border-border" />}
                 <h3 className="font-bengali font-bold text-foreground text-lg mb-2">{step.title}</h3>
                 <p className="text-muted-foreground font-bengali text-sm">{step.desc}</p>
               </motion.div>
@@ -286,14 +240,7 @@ export default function HomePage() {
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {benefits.map((b, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.08, duration: 0.5 }}
-                className="bg-card rounded-2xl p-7 border border-border shadow-brand-sm hover:shadow-brand-lg transition-all duration-300 hover-lift group"
-              >
+              <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.08, duration: 0.5 }} className="bg-card rounded-2xl p-7 border border-border shadow-brand-sm hover:shadow-brand-lg transition-all duration-300 hover-lift group">
                 <div className={`flex h-14 w-14 items-center justify-center rounded-2xl mb-5 ${b.color} transition-transform group-hover:scale-110`}>
                   <b.icon className="h-7 w-7" />
                 </div>
@@ -315,13 +262,7 @@ export default function HomePage() {
             </motion.div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
               {bestSellers.map((book, i) => (
-                <motion.div
-                  key={book.id}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: i * 0.1 }}
-                >
+                <motion.div key={book.id} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.1 }}>
                   <BookCard book={book} />
                 </motion.div>
               ))}
@@ -331,46 +272,41 @@ export default function HomePage() {
       )}
 
       {/* ─── TESTIMONIALS ─── */}
-      <section className="section-py bg-gradient-hero relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
-        </div>
-        <div className="container mx-auto relative z-10">
-          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
-            <motion.p variants={fadeUp} className="text-sm font-semibold text-gold font-bengali mb-2">তাদের সাফল্যের গল্প</motion.p>
-            <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-primary-foreground">পাঠকরা কী বলছেন</motion.h2>
-          </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15, duration: 0.5 }}
-                className="bg-card rounded-2xl p-7 shadow-brand-xl relative group hover-lift"
-              >
-                <Quote className="absolute top-5 right-5 h-8 w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
-                <div className="flex items-center gap-0.5 mb-4">
-                  {[...Array(t.rating)].map((_, j) => (
-                    <Star key={j} className="h-4 w-4 text-gold fill-current" />
-                  ))}
-                </div>
-                <p className="font-bengali text-sm leading-relaxed text-muted-foreground mb-6">"{t.text}"</p>
-                <div className="flex items-center gap-3 pt-4 border-t border-border">
-                  <div className="h-11 w-11 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm font-bengali">
-                    {t.avatar}
-                  </div>
-                  <div>
-                    <div className="font-semibold font-bengali text-foreground text-sm">{t.name}</div>
-                    <div className="text-xs text-muted-foreground font-bengali">{t.role}</div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+      {testimonials.length > 0 && (
+        <section className="section-py bg-gradient-hero relative overflow-hidden">
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="absolute top-0 right-0 h-[400px] w-[400px] rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
           </div>
-        </div>
-      </section>
+          <div className="container mx-auto relative z-10">
+            <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
+              <motion.p variants={fadeUp} className="text-sm font-semibold text-gold font-bengali mb-2">তাদের সাফল্যের গল্প</motion.p>
+              <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-primary-foreground">পাঠকরা কী বলছেন</motion.h2>
+            </motion.div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {testimonials.map((t, i) => (
+                <motion.div key={i} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.15, duration: 0.5 }} className="bg-card rounded-2xl p-7 shadow-brand-xl relative group hover-lift">
+                  <Quote className="absolute top-5 right-5 h-8 w-8 text-primary/10 group-hover:text-primary/20 transition-colors" />
+                  <div className="flex items-center gap-0.5 mb-4">
+                    {[...Array(t.rating)].map((_, j) => (
+                      <Star key={j} className="h-4 w-4 text-gold fill-current" />
+                    ))}
+                  </div>
+                  <p className="font-bengali text-sm leading-relaxed text-muted-foreground mb-6">"{t.text}"</p>
+                  <div className="flex items-center gap-3 pt-4 border-t border-border">
+                    <div className="h-11 w-11 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm font-bengali">
+                      {t.avatar}
+                    </div>
+                    <div>
+                      <div className="font-semibold font-bengali text-foreground text-sm">{t.name}</div>
+                      <div className="text-xs text-muted-foreground font-bengali">{t.role}</div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ─── SOCIAL PROOF BANNER ─── */}
       <section className="bg-secondary py-6">
@@ -387,35 +323,15 @@ export default function HomePage() {
       {/* ─── NEWSLETTER ─── */}
       <section className="section-py bg-card border-y border-border">
         <div className="container mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="max-w-2xl mx-auto text-center"
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="max-w-2xl mx-auto text-center">
             <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 mb-6">
               <Mail className="h-8 w-8 text-primary" />
             </div>
             <h2 className="text-3xl lg:text-4xl font-bold font-bengali text-foreground mb-4">নতুন বইয়ের আপডেট পান</h2>
-            <p className="text-muted-foreground font-bengali text-lg mb-8">
-              নতুন বই প্রকাশ, এক্সক্লুসিভ ডিসকাউন্ট এবং ফ্রি রিসোর্স সরাসরি আপনার ইমেইলে।
-            </p>
+            <p className="text-muted-foreground font-bengali text-lg mb-8">নতুন বই প্রকাশ, এক্সক্লুসিভ ডিসকাউন্ট এবং ফ্রি রিসোর্স সরাসরি আপনার ইমেইলে।</p>
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
-              <input
-                type="email"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="আপনার ইমেইল লিখুন"
-                className="flex-1 h-12 px-5 rounded-xl border border-border bg-background text-foreground font-bengali placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              />
-              <Button
-                type="submit"
-                disabled={subscribing}
-                size="lg"
-                className="gap-2 bg-primary hover:bg-primary-light text-primary-foreground font-bengali rounded-xl px-8 h-12 shadow-teal"
-              >
+              <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="আপনার ইমেইল লিখুন" className="flex-1 h-12 px-5 rounded-xl border border-border bg-background text-foreground font-bengali placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring" />
+              <Button type="submit" disabled={subscribing} size="lg" className="gap-2 bg-primary hover:bg-primary-light text-primary-foreground font-bengali rounded-xl px-8 h-12 shadow-teal">
                 {subscribing ? "সাবমিট হচ্ছে..." : <>সাবস্ক্রাইব <Send className="h-4 w-4" /></>}
               </Button>
             </form>
@@ -427,13 +343,7 @@ export default function HomePage() {
       {/* ─── FINAL CTA ─── */}
       <section className="section-py bg-background">
         <div className="container mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="bg-gradient-hero rounded-3xl p-10 lg:p-20 text-center text-primary-foreground relative overflow-hidden"
-          >
+          <motion.div initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6 }} className="bg-gradient-hero rounded-3xl p-10 lg:p-20 text-center text-primary-foreground relative overflow-hidden">
             <div className="absolute inset-0 overflow-hidden">
               <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full opacity-[0.08]" style={{ background: "radial-gradient(circle, hsl(39, 88%, 52%), transparent 70%)" }} />
               <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full opacity-[0.06]" style={{ background: "radial-gradient(circle, hsl(0, 0%, 100%), transparent 70%)" }} />
@@ -443,12 +353,8 @@ export default function HomePage() {
                 <Sparkles className="h-4 w-4 text-gold" />
                 <span>সীমিত সময়ের অফার</span>
               </div>
-              <h2 className="text-3xl lg:text-5xl font-bold font-bengali mb-5 leading-tight">
-                আজই শুরু করুন আপনার<br className="hidden lg:block" /> সফলতার যাত্রা
-              </h2>
-              <p className="text-lg lg:text-xl font-bengali mb-10 max-w-2xl mx-auto opacity-85">
-                হাজার হাজার উদ্যোক্তার মতো আপনিও পরিবর্তন আনুন। প্রথম পদক্ষেপটা এখনই নিন।
-              </p>
+              <h2 className="text-3xl lg:text-5xl font-bold font-bengali mb-5 leading-tight">আজই শুরু করুন আপনার<br className="hidden lg:block" /> সফলতার যাত্রা</h2>
+              <p className="text-lg lg:text-xl font-bengali mb-10 max-w-2xl mx-auto opacity-85">হাজার হাজার উদ্যোক্তার মতো আপনিও পরিবর্তন আনুন। প্রথম পদক্ষেপটা এখনই নিন।</p>
               <Link to="/books">
                 <Button size="lg" className="gap-2.5 bg-secondary hover:bg-secondary-light text-secondary-foreground font-bengali text-lg shadow-gold px-10 py-7 rounded-xl">
                   এখনই বই কিনুন <ArrowRight className="h-5 w-5" />
