@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
+import TrackingScripts from "@/components/TrackingScripts";
 
 // Lazy load non-critical routes
 const Books = lazy(() => import("./pages/Books"));
@@ -21,6 +22,7 @@ const AdminOrders = lazy(() => import("./pages/admin/AdminOrders"));
 const AdminCoupons = lazy(() => import("./pages/admin/AdminCoupons"));
 const AdminReviews = lazy(() => import("./pages/admin/AdminReviews"));
 const AdminSubscribers = lazy(() => import("./pages/admin/AdminSubscribers"));
+const AdminSettings = lazy(() => import("./pages/admin/AdminSettings"));
 const PaymentSuccess = lazy(() => import("./pages/PaymentSuccess"));
 
 const queryClient = new QueryClient();
@@ -36,6 +38,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <TrackingScripts />
       <BrowserRouter>
         <Suspense fallback={<Loading />}>
           <Routes>
@@ -55,6 +58,7 @@ const App = () => (
               <Route path="reviews" element={<AdminReviews />} />
               <Route path="coupons" element={<AdminCoupons />} />
               <Route path="subscribers" element={<AdminSubscribers />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
 
             <Route path="*" element={<NotFound />} />
