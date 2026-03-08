@@ -384,6 +384,46 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ─── NEWSLETTER ─── */}
+      <section className="section-py bg-card border-y border-border">
+        <div className="container mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 mb-6">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold font-bengali text-foreground mb-4">নতুন বইয়ের আপডেট পান</h2>
+            <p className="text-muted-foreground font-bengali text-lg mb-8">
+              নতুন বই প্রকাশ, এক্সক্লুসিভ ডিসকাউন্ট এবং ফ্রি রিসোর্স সরাসরি আপনার ইমেইলে।
+            </p>
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="আপনার ইমেইল লিখুন"
+                className="flex-1 h-12 px-5 rounded-xl border border-border bg-background text-foreground font-bengali placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <Button
+                type="submit"
+                disabled={subscribing}
+                size="lg"
+                className="gap-2 bg-primary hover:bg-primary-light text-primary-foreground font-bengali rounded-xl px-8 h-12 shadow-teal"
+              >
+                {subscribing ? "সাবমিট হচ্ছে..." : <>সাবস্ক্রাইব <Send className="h-4 w-4" /></>}
+              </Button>
+            </form>
+            <p className="text-xs text-muted-foreground font-bengali mt-4">স্প্যাম করা হবে না। যেকোনো সময় আনসাবস্ক্রাইব করতে পারবেন।</p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* ─── FINAL CTA ─── */}
       <section className="section-py bg-background">
         <div className="container mx-auto">
