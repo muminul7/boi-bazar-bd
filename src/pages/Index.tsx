@@ -155,7 +155,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <div className="text-lg font-bold font-body text-foreground">৫,০০০+</div>
-                    <div className="text-xs text-muted-foreground font-bengali">ডাউনলোড</div>
+                    <div className="text-xs text-muted-foreground font-bengali">সব ধরনের উদ্যোক্তাদের জন্য</div>
                   </div>
                 </div>
               </motion.div>
