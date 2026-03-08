@@ -84,7 +84,7 @@ serve(async (req) => {
         }
       }
 
-      if (!merchantId || !password) {
+      if (!merchantId || !password2) {
         console.error("PayStation credentials missing, cannot verify payment");
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return new Response(null, {
