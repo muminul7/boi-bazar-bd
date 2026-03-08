@@ -13,18 +13,16 @@ interface CheckoutModalProps {
   book: Book;
 }
 
-type PaymentMethod = "sslcommerz" | "bkash" | "nagad";
+type PaymentMethod = "paystation";
 
 const paymentMethods: { id: PaymentMethod; label: string; desc: string; emoji: string }[] = [
-  { id: "sslcommerz", label: "কার্ড / নেট ব্যাংকিং", desc: "Visa, Mastercard, সব ব্যাংক", emoji: "💳" },
-  { id: "bkash", label: "বিকাশ", desc: "মোবাইল ব্যাংকিং", emoji: "📱" },
-  { id: "nagad", label: "নগদ", desc: "মোবাইল ব্যাংকিং", emoji: "💰" },
+  { id: "paystation", label: "PayStation", desc: "কার্ড, বিকাশ, নগদ, রকেট সব সাপোর্ট", emoji: "💳" },
 ];
 
 export default function CheckoutModal({ open, onClose, book }: CheckoutModalProps) {
   const { toast } = useToast();
   const [step, setStep] = useState<"form" | "payment">("form");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("sslcommerz");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paystation");
   const [coupon, setCoupon] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const [couponDiscount, setCouponDiscount] = useState(0);
@@ -215,7 +213,7 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
 
               <div className="flex items-start gap-2 p-3 rounded-lg bg-secondary-subtle border border-secondary/30 text-xs font-bengali text-secondary-foreground">
                 <Shield className="h-4 w-4 shrink-0 mt-0.5" />
-                <span>আপনার পেমেন্ট SSLCommerz দ্বারা সুরক্ষিত। বিকাশ ও নগদ পেমেন্ট SSLCommerz গেটওয়ে দিয়ে প্রসেস হবে।</span>
+                <span>আপনার পেমেন্ট PayStation দ্বারা সুরক্ষিত। কার্ড, বিকাশ, নগদ, রকেট সব পেমেন্ট মেথড সাপোর্ট করে।</span>
               </div>
 
               <div className="flex gap-2">

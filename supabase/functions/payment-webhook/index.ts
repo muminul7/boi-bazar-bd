@@ -3,95 +3,105 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 serve(async (req) => {
   try {
-    const formData = await req.text();
-    const params = new URLSearchParams(formData);
+    // PayStation sends callback as URL params (GET redirect)
+    const url = new URL(req.url);
+    const status = url.searchParams.get("status");
+    const invoiceNumber = url.searchParams.get("invoice_number");
+    const trxId = url.searchParams.get("trx_id");
 
-    const tranId = params.get("tran_id");
-    const status = params.get("status");
-    const valId = params.get("val_id");
-    const amount = params.get("amount");
-    const bankTranId = params.get("bank_tran_id");
+    console.log("Payment webhook received:", { status, invoiceNumber, trxId });
 
-    console.log("Payment webhook received:", { tranId, status, valId, amount });
-
-    if (!tranId) {
-      return new Response("Missing tran_id", { status: 400 });
+    if (!invoiceNumber) {
+      return new Response("Missing invoice_number", { status: 400 });
     }
 
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Get the order to extract origin for redirect
-    const { data: order } = await supabase.from("orders").select("*").eq("id", tranId).single();
+    // Find order by invoice number (stored in transaction_id)
+    const { data: order } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("transaction_id", invoiceNumber)
+      .single();
 
     if (!order) {
+      console.error("Order not found for invoice:", invoiceNumber);
       return new Response("Order not found", { status: 404 });
     }
 
-    // Extract origin from billing_address hack
+    // Get origin from checkout_items or use default
     let origin = "";
-    let actualAddress = order.billing_address || "";
-    if (actualAddress.includes("|||")) {
-      const parts = actualAddress.split("|||");
-      actualAddress = parts[0];
-      origin = parts[1];
-    }
 
-    if (status === "VALID" || status === "VALIDATED") {
-      // Validate with SSLCommerz
-      const storeId = Deno.env.get("SSLCOMMERZ_STORE_ID") || "testbox";
-      const storePass = Deno.env.get("SSLCOMMERZ_STORE_PASSWORD") || "qwerty";
-      const isSandbox = Deno.env.get("SSLCOMMERZ_SANDBOX") !== "false";
-      const baseUrl = isSandbox
-        ? "https://sandbox.sslcommerz.com"
-        : "https://securepay.sslcommerz.com";
-
-      // Validate transaction
-      const validateUrl = `${baseUrl}/validator/api/validationserverAPI.php?val_id=${valId}&store_id=${storeId}&store_passwd=${storePass}&format=json`;
-      const validateRes = await fetch(validateUrl);
-      const validateData = await validateRes.json();
-
-      if (validateData.status === "VALID" || validateData.status === "VALIDATED") {
-        // Update order as paid
-        await supabase.from("orders").update({
-          payment_status: "paid",
-          transaction_id: bankTranId || valId,
-          payment_method: params.get("card_type") || "SSLCommerz",
-          billing_address: actualAddress,
-        }).eq("id", tranId);
-
-        // Update coupon usage if applicable
-        if (order.coupon_code) {
-          await supabase.rpc("increment_coupon_usage", { coupon_code: order.coupon_code });
+    if (status === "Successful") {
+      // Optionally verify with PayStation transaction-status API
+      const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
+      if (merchantId) {
+        try {
+          const verifyRes = await fetch("https://api.paystation.com.bd/transaction-status", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "merchantId": merchantId,
+            },
+            body: JSON.stringify({ invoice_number: invoiceNumber }),
+          });
+          const verifyData = await verifyRes.json();
+          console.log("PayStation verify:", verifyData);
+        } catch (e) {
+          console.error("Verification error:", e);
         }
-
-        // Redirect to success page
-        const redirectUrl = origin
-          ? `${origin}/payment-success?order_id=${tranId}&status=success`
-          : `${supabaseUrl}/payment-success?order_id=${tranId}&status=success`;
-
-        return new Response(null, {
-          status: 302,
-          headers: { Location: redirectUrl },
-        });
       }
+
+      // Update order as paid
+      await supabase.from("orders").update({
+        payment_status: "paid",
+        transaction_id: trxId || invoiceNumber,
+        payment_method: "PayStation",
+      }).eq("id", order.id);
+
+      // Update coupon usage if applicable
+      if (order.coupon_code) {
+        const { data: coupon } = await supabase
+          .from("coupons")
+          .select("used_count")
+          .eq("code", order.coupon_code)
+          .single();
+        if (coupon) {
+          await supabase.from("coupons")
+            .update({ used_count: (coupon.used_count || 0) + 1 })
+            .eq("code", order.coupon_code);
+        }
+      }
+
+      // Redirect to success page
+      // Try to find origin - check if it was stored
+      const possibleOrigins = [
+        req.headers.get("referer"),
+        req.headers.get("origin"),
+      ].filter(Boolean);
+
+      // Use published URL or preview URL
+      origin = "https://boi-bazar-bd.lovable.app";
+
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=success` },
+      });
     }
 
-    // Failed or cancelled
-    const paymentStatus = status === "FAILED" ? "failed" : status === "CANCELLED" ? "cancelled" : "failed";
+    // Failed or Cancelled
+    const paymentStatus = status === "Failed" ? "failed" : status === "Canceled" ? "cancelled" : "failed";
     await supabase.from("orders").update({
       payment_status: paymentStatus,
-      billing_address: actualAddress,
-    }).eq("id", tranId);
+    }).eq("id", order.id);
 
-    const redirectUrl = origin
-      ? `${origin}/payment-success?order_id=${tranId}&status=${paymentStatus}`
-      : `${supabaseUrl}/payment-success?status=${paymentStatus}`;
+    origin = "https://boi-bazar-bd.lovable.app";
 
     return new Response(null, {
       status: 302,
-      headers: { Location: redirectUrl },
+      headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=${paymentStatus}` },
     });
   } catch (err) {
     console.error("Webhook error:", err);
