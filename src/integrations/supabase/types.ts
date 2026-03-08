@@ -14,6 +14,35 @@ export type Database = {
   }
   public: {
     Tables: {
+      book_files: {
+        Row: {
+          book_id: string
+          created_at: string
+          file_url: string
+          id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          file_url: string
+          id?: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          file_url?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_files_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: true
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           active: boolean | null
@@ -26,7 +55,6 @@ export type Database = {
           description: string | null
           faq: Json | null
           featured: boolean | null
-          file_url: string | null
           format: string | null
           id: string
           language: string | null
@@ -58,7 +86,6 @@ export type Database = {
           description?: string | null
           faq?: Json | null
           featured?: boolean | null
-          file_url?: string | null
           format?: string | null
           id?: string
           language?: string | null
@@ -90,7 +117,6 @@ export type Database = {
           description?: string | null
           faq?: Json | null
           featured?: boolean | null
-          file_url?: string | null
           format?: string | null
           id?: string
           language?: string | null
@@ -252,6 +278,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      validate_coupon: {
+        Args: { _book_price: number; _code: string }
+        Returns: Json
       }
     }
     Enums: {

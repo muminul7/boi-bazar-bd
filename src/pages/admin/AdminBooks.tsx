@@ -28,10 +28,17 @@ export default function AdminBooks() {
     best_seller: false, new_release: false, pages: 0, active: true,
     cover_url: "", file_url: "",
   });
+  const [bookFiles, setBookFiles] = useState<Record<string, string>>({});
 
   const fetchBooks = async () => {
-    const { data } = await supabase.from("books").select("*").order("created_at", { ascending: false });
-    setBooks(data || []);
+    const [booksRes, filesRes] = await Promise.all([
+      supabase.from("books").select("*").order("created_at", { ascending: false }),
+      supabase.from("book_files").select("book_id, file_url"),
+    ]);
+    setBooks(booksRes.data || []);
+    const filesMap: Record<string, string> = {};
+    (filesRes.data || []).forEach((f: any) => { filesMap[f.book_id] = f.file_url; });
+    setBookFiles(filesMap);
     setLoading(false);
   };
 
@@ -51,7 +58,7 @@ export default function AdminBooks() {
       short_description: book.short_description || "", featured: book.featured || false,
       best_seller: book.best_seller || false, new_release: book.new_release || false,
       pages: book.pages || 0, active: book.active !== false,
-      cover_url: book.cover_url || "", file_url: book.file_url || "",
+      cover_url: book.cover_url || "", file_url: bookFiles[book.id] || "",
     });
     setDialogOpen(true);
   };
@@ -96,16 +103,21 @@ export default function AdminBooks() {
 
   const handleSave = async () => {
     try {
-      const payload = { ...form };
+      const { file_url, ...bookPayload } = form;
+      let bookId = editingBook?.id;
       if (editingBook) {
-        const { error } = await supabase.from("books").update(payload).eq("id", editingBook.id);
+        const { error } = await supabase.from("books").update(bookPayload).eq("id", editingBook.id);
         if (error) throw error;
-        toast({ title: "বই আপডেট হয়েছে" });
       } else {
-        const { error } = await supabase.from("books").insert(payload);
+        const { data, error } = await supabase.from("books").insert(bookPayload).select("id").single();
         if (error) throw error;
-        toast({ title: "নতুন বই যোগ হয়েছে" });
+        bookId = data.id;
       }
+      // Save file_url to book_files table
+      if (bookId && file_url) {
+        await supabase.from("book_files").upsert({ book_id: bookId, file_url }, { onConflict: "book_id" });
+      }
+      toast({ title: editingBook ? "বই আপডেট হয়েছে" : "নতুন বই যোগ হয়েছে" });
       setDialogOpen(false);
       resetForm();
       fetchBooks();
@@ -277,7 +289,7 @@ export default function AdminBooks() {
                     <TableCell className="font-bengali">{book.author}</TableCell>
                     <TableCell>৳{book.price}</TableCell>
                     <TableCell>
-                      {book.file_url ? (
+                      {bookFiles[book.id] ? (
                         <span className="text-xs text-primary flex items-center gap-1"><FileText className="h-3 w-3" /> আছে</span>
                       ) : (
                         <span className="text-xs text-muted-foreground">নেই</span>
