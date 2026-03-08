@@ -21,6 +21,7 @@ const items = [
   { title: "রিভিউ", url: "/admin/reviews", icon: MessageSquare },
   { title: "অর্ডার", url: "/admin/orders", icon: ShoppingCart },
   { title: "কুপন", url: "/admin/coupons", icon: Tag },
+  { title: "সাবস্ক্রাইবার", url: "/admin/subscribers", icon: Mail },
 ];
 
 export function AdminSidebar() {
