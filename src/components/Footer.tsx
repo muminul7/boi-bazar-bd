@@ -13,8 +13,8 @@ export default function Footer() {
                 <BookOpen className="h-5 w-5 text-primary-foreground" />
               </div>
               <div>
-                <div className="text-lg font-bold font-bengali">একিতাব</div>
-                <div className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">eKitab Store</div>
+                <div className="text-lg font-bold font-bengali">Boi Bazar</div>
+                <div className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">Book Store</div>
               </div>
             </Link>
             <p className="text-sm font-bengali leading-relaxed max-w-xs mb-5" style={{ color: "hsl(210, 20%, 70%)" }}>
