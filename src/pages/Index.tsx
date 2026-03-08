@@ -1,10 +1,13 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, CheckCircle, Star, Shield, Zap, TrendingUp, Users, Sparkles, Download, Heart, Quote } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle, Star, Shield, Zap, TrendingUp, Users, Sparkles, Download, Heart, Quote, Mail, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { books, categories } from "@/data/books";
 import BookCard from "@/components/BookCard";
 import heroIllustration from "@/assets/hero-illustration.jpg";
 import { motion, type Variants } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const fadeUp: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -45,6 +48,30 @@ const steps = [
 export default function HomePage() {
   const featuredBooks = books.filter((b) => b.featured);
   const bestSellers = books.filter((b) => b.bestSeller);
+  const [email, setEmail] = useState("");
+  const [subscribing, setSubscribing] = useState(false);
+  const { toast } = useToast();
+
+  const handleSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim()) return;
+    setSubscribing(true);
+    try {
+      const { error } = await supabase.from("newsletter_subscribers").insert({ email: email.trim().toLowerCase() });
+      if (error) {
+        if (error.code === "23505") {
+          toast({ title: "ইতোমধ্যে সাবস্ক্রাইব করা হয়েছে!", description: "এই ইমেইল আগে থেকেই আমাদের তালিকায় আছে।" });
+        } else throw error;
+      } else {
+        toast({ title: "সাবস্ক্রিপশন সফল! 🎉", description: "নতুন বই ও অফারের আপডেট পাবেন ইমেইলে।" });
+        setEmail("");
+      }
+    } catch {
+      toast({ title: "কিছু সমস্যা হয়েছে", description: "অনুগ্রহ করে আবার চেষ্টা করুন।", variant: "destructive" });
+    } finally {
+      setSubscribing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen overflow-hidden">
@@ -354,6 +381,46 @@ export default function HomePage() {
               <span className="font-body">৫,০০০+</span> উদ্যোক্তা ইতোমধ্যে তাদের ব্যবসা বদলে ফেলেছেন একিতাবের সাথে
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* ─── NEWSLETTER ─── */}
+      <section className="section-py bg-card border-y border-border">
+        <div className="container mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="max-w-2xl mx-auto text-center"
+          >
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/10 mb-6">
+              <Mail className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="text-3xl lg:text-4xl font-bold font-bengali text-foreground mb-4">নতুন বইয়ের আপডেট পান</h2>
+            <p className="text-muted-foreground font-bengali text-lg mb-8">
+              নতুন বই প্রকাশ, এক্সক্লুসিভ ডিসকাউন্ট এবং ফ্রি রিসোর্স সরাসরি আপনার ইমেইলে।
+            </p>
+            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-lg mx-auto">
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="আপনার ইমেইল লিখুন"
+                className="flex-1 h-12 px-5 rounded-xl border border-border bg-background text-foreground font-bengali placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              />
+              <Button
+                type="submit"
+                disabled={subscribing}
+                size="lg"
+                className="gap-2 bg-primary hover:bg-primary-light text-primary-foreground font-bengali rounded-xl px-8 h-12 shadow-teal"
+              >
+                {subscribing ? "সাবমিট হচ্ছে..." : <>সাবস্ক্রাইব <Send className="h-4 w-4" /></>}
+              </Button>
+            </form>
+            <p className="text-xs text-muted-foreground font-bengali mt-4">স্প্যাম করা হবে না। যেকোনো সময় আনসাবস্ক্রাইব করতে পারবেন।</p>
+          </motion.div>
         </div>
       </section>
 
