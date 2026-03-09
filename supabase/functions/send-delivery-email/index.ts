@@ -137,7 +137,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "বই বাজার <onboarding@resend.dev>",
+        from: "বই বাজার <noreply@socialgeekbd.com>",
         to: [order.customer_email],
         subject: `📚 "${bookTitle}" — আপনার ই-বুক ডাউনলোড করুন`,
         html: emailHtml,
