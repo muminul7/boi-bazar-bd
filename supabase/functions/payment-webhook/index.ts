@@ -141,12 +141,15 @@ serve(async (req) => {
       let verified = false;
       try {
         const verifyFormData = new FormData();
-        verifyFormData.append("merchantId", merchantId);
-        verifyFormData.append("password", password);
         verifyFormData.append("invoice_number", invoiceNumber);
+        verifyFormData.append("trx_id", trxId || "");
+        verifyFormData.append("password", password);
 
         const verifyRes = await fetch("https://api.paystation.com.bd/transaction-status", {
           method: "POST",
+          headers: {
+            "merchantId": merchantId,
+          },
           body: verifyFormData,
         });
         const verifyData = await verifyRes.json();
