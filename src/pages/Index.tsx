@@ -173,7 +173,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ─── FEATURED BOOKS ─── */}
+      {/* ─── SPECIAL OFFER BANNER ─── */}
+      <SpecialOfferBanner />
+
+
       {featuredBooks.length > 0 &&
       <section className="section-py bg-background">
           <div className="container mx-auto">
