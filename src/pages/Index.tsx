@@ -118,6 +118,7 @@ function SpecialOfferBanner() {
   );
 }
 
+export default function HomePage() {
 
   const { data: books = [] } = useBooks();
   const featuredBooks = useMemo(() => books.filter((b) => b.featured), [books]);
