@@ -39,7 +39,86 @@ const steps = [
 { num: "৪", title: "সফল হন", desc: "প্রমাণিত কৌশল প্রয়োগ করে আয় শুরু করুন" }];
 
 
-export default function HomePage() {
+function useCountdown(targetDate: Date) {
+  const calcTimeLeft = useCallback(() => {
+    const diff = targetDate.getTime() - Date.now();
+    if (diff <= 0) return { days: 0, hours: 0, minutes: 0, seconds: 0, expired: true };
+    return {
+      days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+      hours: Math.floor((diff / (1000 * 60 * 60)) % 24),
+      minutes: Math.floor((diff / (1000 * 60)) % 60),
+      seconds: Math.floor((diff / 1000) % 60),
+      expired: false,
+    };
+  }, [targetDate]);
+
+  const [timeLeft, setTimeLeft] = useState(calcTimeLeft);
+
+  useEffect(() => {
+    const id = setInterval(() => setTimeLeft(calcTimeLeft()), 1000);
+    return () => clearInterval(id);
+  }, [calcTimeLeft]);
+
+  return timeLeft;
+}
+
+function SpecialOfferBanner() {
+  // Offer ends 3 days from first visit (persisted in localStorage)
+  const [target] = useState(() => {
+    const key = "boi_bazar_offer_end";
+    const stored = localStorage.getItem(key);
+    if (stored) return new Date(stored);
+    const d = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
+    localStorage.setItem(key, d.toISOString());
+    return d;
+  });
+
+  const { days, hours, minutes, seconds, expired } = useCountdown(target);
+
+  if (expired) return null;
+
+  const units = [
+    { label: "দিন", value: days },
+    { label: "ঘণ্টা", value: hours },
+    { label: "মিনিট", value: minutes },
+    { label: "সেকেন্ড", value: seconds },
+  ];
+
+  return (
+    <section className="relative overflow-hidden bg-gradient-to-r from-destructive/90 via-destructive to-destructive/90 py-5">
+      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "repeating-linear-gradient(45deg, transparent, transparent 20px, hsl(0,0%,100%) 20px, hsl(0,0%,100%) 21px)" }} />
+      <div className="container mx-auto relative z-10">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-8">
+          <div className="flex items-center gap-2 text-destructive-foreground">
+            <Flame className="h-6 w-6 animate-pulse" />
+            <span className="font-bengali font-bold text-lg md:text-xl">স্পেশাল অফার!</span>
+            <span className="font-bengali text-sm md:text-base opacity-90">সব বইয়ে বিশেষ ছাড়</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {units.map((u) => (
+              <div key={u.label} className="flex flex-col items-center">
+                <div className="bg-background/20 backdrop-blur-sm rounded-xl w-14 h-14 flex items-center justify-center border border-background/10">
+                  <span className="text-destructive-foreground font-bold text-xl font-body">{String(u.value).padStart(2, "0")}</span>
+                </div>
+                <span className="text-[10px] text-destructive-foreground/80 font-bengali mt-1">{u.label}</span>
+              </div>
+            ))}
+          </div>
+
+          <Link to="/books">
+            <Button size="sm" className="bg-background text-destructive hover:bg-background/90 font-bengali font-bold gap-1.5 rounded-xl shadow-lg px-6">
+              <Clock className="h-4 w-4" />
+              এখনই কিনুন
+            </Button>
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
   const { data: books = [] } = useBooks();
   const featuredBooks = useMemo(() => books.filter((b) => b.featured), [books]);
   const bestSellers = useMemo(() => books.filter((b) => b.bestSeller), [books]);
