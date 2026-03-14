@@ -69,6 +69,11 @@ The project expects Supabase client keys for frontend and payment/email credenti
 
 Edge Functions now use a shared config convention at `supabase/functions/_shared/config.ts` to read and validate environment variables in one place.
 
+
+## Project organization conventions
+
+See `docs/PROJECT_CONVENTIONS.md` for naming and folder-structure conventions used across the project.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
