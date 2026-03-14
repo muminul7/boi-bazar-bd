@@ -13,12 +13,15 @@ This file defines naming and folder-organization conventions used in this reposi
 - `supabase/functions` → Edge Functions
   - `supabase/functions/_shared` → shared utilities/config for Edge Functions
 
+> `supabase/` is the official Supabase CLI directory convention and should not be renamed.
+
 ## Naming conventions
 
 - **React components**: PascalCase file names (e.g. `CheckoutModal.tsx`)
 - **Hooks**: camelCase file names starting with `use` (e.g. `useBooks.ts`, `useToast.ts`, `useMobile.tsx`)
 - **Utility files**: lower camel/single-purpose names (e.g. `utils.ts`, `config.ts`)
 - **Edge Function entrypoints**: `index.ts` under function folders (Supabase convention)
+- **Supabase function folders**: kebab-case names (e.g. `initiate-payment`, `payment-webhook`)
 
 ## Import conventions
 

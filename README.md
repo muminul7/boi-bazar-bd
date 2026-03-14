@@ -74,6 +74,8 @@ Edge Functions now use a shared config convention at `supabase/functions/_shared
 
 See `docs/PROJECT_CONVENTIONS.md` for naming and folder-structure conventions used across the project.
 
+Note: the top-level `supabase/` directory name is part of Supabase CLI conventions and should remain as-is.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
