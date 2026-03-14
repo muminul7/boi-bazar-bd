@@ -1,8 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { getAppConfig, getPaymentConfig, getEnv } from "../_shared/config.ts";
+import { getAppConfig, getEnv } from "../_shared/config.ts";
 import { createCorsResponse } from "../_shared/cors.ts";
-import { verifyPayStationPayment } from "../_shared/paystation.ts";
 import { buildPaymentResultUrl, normalizePublicBaseUrl } from "../_shared/public-url.ts";
 
 function createPaymentRedirectResponse(baseUrl: string, orderId: string, status: string): Response {
@@ -10,6 +9,49 @@ function createPaymentRedirectResponse(baseUrl: string, orderId: string, status:
     status: 302,
     headers: { Location: buildPaymentResultUrl(baseUrl, orderId, status) },
   });
+}
+
+async function finalizeSuccessfulPayment(
+  supabase: ReturnType<typeof createClient>,
+  order: any,
+  transactionId: string,
+  supabaseUrl: string,
+  supabaseServiceRoleKey: string,
+) {
+  await supabase.from("orders").update({
+    payment_status: "paid",
+    transaction_id: transactionId,
+    payment_method: "PayStation",
+  }).eq("id", order.id);
+
+  if (order.coupon_code) {
+    const { data: coupon } = await supabase
+      .from("coupons")
+      .select("used_count")
+      .eq("code", order.coupon_code)
+      .single();
+
+    if (coupon) {
+      await supabase.from("coupons")
+        .update({ used_count: (coupon.used_count || 0) + 1 })
+        .eq("code", order.coupon_code);
+    }
+  }
+
+  try {
+    const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-delivery-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+      },
+      body: JSON.stringify({ orderId: order.id }),
+    });
+    const emailData = await emailRes.json();
+    console.log("Delivery email result:", emailData);
+  } catch (emailErr) {
+    console.error("Delivery email error:", emailErr);
+  }
 }
 
 serve(async (req) => {
@@ -138,86 +180,14 @@ serve(async (req) => {
     console.log("Normalized status:", normalizedStatus, "isSuccessful:", isSuccessful);
 
     if (isSuccessful) {
-      let merchantId: string;
-      let paystationTransactionStatusUrl: string;
-      let paystationTransactionStatusV2Url: string;
-      try {
-        ({
-          paystationMerchantId: merchantId,
-          paystationTransactionStatusUrl,
-          paystationTransactionStatusV2Url,
-        } = getPaymentConfig());
-      } catch {
-        console.error("PayStation credentials missing, cannot verify payment");
-        await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
-        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
-      }
-
-      const verification = await verifyPayStationPayment({
-        merchantId,
-        transactionStatusUrl: paystationTransactionStatusUrl,
-        transactionStatusV2Url: paystationTransactionStatusV2Url,
-        invoiceNumber,
-        trxId,
-      });
-
-      if (verification.state === "pending") {
-        console.warn("Payment verification still pending for invoice:", invoiceNumber, verification.message);
-        await supabase.from("orders").update({ payment_status: "pending_verification" }).eq("id", order.id);
-        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "pending");
-      }
-
-      if (
-        verification.amount !== null &&
-        verification.amount > 0 &&
-        Math.abs(verification.amount - order.amount) > 1
-      ) {
-        console.error("Amount mismatch!", { expected: order.amount, received: verification.amount });
-        await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
-        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
-      }
-
-      if (verification.state !== "verified") {
-        console.error("Payment verification FAILED for invoice:", invoiceNumber, verification.message);
-        await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
-        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
-      }
-
-      const confirmedTransactionId = verification.trxId || trxId || invoiceNumber;
-
-      await supabase.from("orders").update({
-        payment_status: "paid",
-        transaction_id: confirmedTransactionId,
-        payment_method: "PayStation",
-      }).eq("id", order.id);
-
-      if (order.coupon_code) {
-        const { data: coupon } = await supabase
-          .from("coupons")
-          .select("used_count")
-          .eq("code", order.coupon_code)
-          .single();
-        if (coupon) {
-          await supabase.from("coupons")
-            .update({ used_count: (coupon.used_count || 0) + 1 })
-            .eq("code", order.coupon_code);
-        }
-      }
-
-      try {
-        const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-delivery-email`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseServiceRoleKey}`,
-          },
-          body: JSON.stringify({ orderId: order.id }),
-        });
-        const emailData = await emailRes.json();
-        console.log("Delivery email result:", emailData);
-      } catch (emailErr) {
-        console.error("Delivery email error:", emailErr);
-      }
+      const confirmedTransactionId = trxId || invoiceNumber;
+      await finalizeSuccessfulPayment(
+        supabase,
+        order,
+        confirmedTransactionId,
+        supabaseUrl,
+        supabaseServiceRoleKey,
+      );
 
       return createPaymentRedirectResponse(redirectBaseUrl, order.id, "success");
     }

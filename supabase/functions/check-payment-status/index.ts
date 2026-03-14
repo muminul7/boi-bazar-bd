@@ -29,6 +29,39 @@ async function sendDeliveryEmail(supabaseUrl: string, supabaseServiceRoleKey: st
   }
 }
 
+async function finalizeSuccessfulPayment(
+  supabase: ReturnType<typeof createClient>,
+  order: any,
+  transactionId: string,
+  supabaseUrl: string,
+  supabaseServiceRoleKey: string,
+) {
+  await supabase.from("orders").update({
+    payment_status: "paid",
+    transaction_id: transactionId,
+    payment_method: "PayStation",
+  }).eq("id", order.id);
+
+  if (order.coupon_code) {
+    const { data: coupon } = await supabase
+      .from("coupons")
+      .select("used_count")
+      .eq("code", order.coupon_code)
+      .single();
+
+    if (coupon) {
+      await supabase
+        .from("coupons")
+        .update({ used_count: (coupon.used_count || 0) + 1 })
+        .eq("code", order.coupon_code);
+    }
+  }
+
+  if (!order.delivery_email_sent) {
+    await sendDeliveryEmail(supabaseUrl, supabaseServiceRoleKey, order.id);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return createCorsResponse(null);
@@ -70,6 +103,23 @@ serve(async (req) => {
         orderId: order.id,
         status: toPaymentPageStatus(order.payment_status),
         paymentStatus: order.payment_status,
+      });
+    }
+
+    if (order.payment_status === "pending_verification") {
+      await finalizeSuccessfulPayment(
+        supabase,
+        order,
+        order.transaction_id || order.id,
+        supabaseUrl,
+        supabaseServiceRoleKey,
+      );
+
+      return jsonResponse({
+        orderId: order.id,
+        status: "success",
+        paymentStatus: "paid",
+        transactionId: order.transaction_id || order.id,
       });
     }
 
@@ -151,32 +201,14 @@ serve(async (req) => {
       });
     }
 
-    const confirmedTransactionId = verification.trxId || trxId || invoiceNumber || transactionId;
-
-    await supabase.from("orders").update({
-      payment_status: "paid",
-      transaction_id: confirmedTransactionId,
-      payment_method: "PayStation",
-    }).eq("id", order.id);
-
-    if (order.coupon_code) {
-      const { data: coupon } = await supabase
-        .from("coupons")
-        .select("used_count")
-        .eq("code", order.coupon_code)
-        .single();
-
-      if (coupon) {
-        await supabase
-          .from("coupons")
-          .update({ used_count: (coupon.used_count || 0) + 1 })
-          .eq("code", order.coupon_code);
-      }
-    }
-
-    if (!order.delivery_email_sent) {
-      await sendDeliveryEmail(supabaseUrl, supabaseServiceRoleKey, order.id);
-    }
+    const confirmedTransactionId = verification.trxId || trxId || invoiceNumber || transactionId || order.id;
+    await finalizeSuccessfulPayment(
+      supabase,
+      order,
+      confirmedTransactionId,
+      supabaseUrl,
+      supabaseServiceRoleKey,
+    );
 
     return jsonResponse({
       orderId: order.id,
