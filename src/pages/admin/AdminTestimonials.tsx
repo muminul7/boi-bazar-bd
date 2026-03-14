@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { AdminTableContentSkeleton } from "@/components/loading-skeletons";
 import { Plus, Pencil, Trash2, Star, Quote, GripVertical } from "lucide-react";
 import { useToast } from "@/hooks/useToast";
 
@@ -129,8 +130,8 @@ export default function AdminTestimonials() {
       <Card className="shadow-brand-sm">
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex justify-center py-12">
-              <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+            <div className="p-6">
+              <AdminTableContentSkeleton rows={5} columns={7} />
             </div>
           ) : testimonials.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground font-bengali">

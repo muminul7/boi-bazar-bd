@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Search, SlidersHorizontal, X, TrendingUp, Zap } from "lucide-react";
 import { useBooks } from "@/hooks/useBooks";
 import BookCard from "@/components/BookCard";
+import { BooksPageSkeleton } from "@/components/loading-skeletons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -57,6 +58,10 @@ export default function BooksPage() {
     { key: "price-low", label: "কম দামে" },
     { key: "price-high", label: "বেশি দামে" },
   ];
+
+  if (isLoading) {
+    return <BooksPageSkeleton />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -128,11 +133,7 @@ export default function BooksPage() {
           {filtered.length} টি বই পাওয়া গেছে
         </p>
 
-        {isLoading ? (
-          <div className="flex justify-center py-20">
-            <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : filtered.length > 0 ? (
+        {filtered.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filtered.map((book) => (
               <BookCard key={book.id} book={book} />

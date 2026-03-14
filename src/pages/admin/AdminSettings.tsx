@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminSettingsSkeleton } from "@/components/loading-skeletons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -119,7 +120,7 @@ export default function AdminSettings() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>;
+    return <AdminSettingsSkeleton />;
   }
 
   return (

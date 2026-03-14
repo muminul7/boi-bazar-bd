@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminDashboardSkeleton } from "@/components/loading-skeletons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -122,7 +123,7 @@ export default function Dashboard() {
   const recentPaidOrders = useMemo(() => paidOrders.slice(0, 10), [paidOrders]);
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>;
+    return <AdminDashboardSkeleton />;
   }
 
   const summaryCards = [

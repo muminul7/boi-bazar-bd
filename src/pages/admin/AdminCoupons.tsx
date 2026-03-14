@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminTableContentSkeleton } from "@/components/loading-skeletons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -137,7 +138,9 @@ export default function AdminCoupons() {
       <Card className="shadow-brand-sm">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>
+            <div className="p-6">
+              <AdminTableContentSkeleton rows={5} columns={6} />
+            </div>
           ) : coupons.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground font-bengali">কোনো কুপন নেই।</div>
           ) : (

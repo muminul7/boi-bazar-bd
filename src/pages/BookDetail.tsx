@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useBook, useBooks } from "@/hooks/useBooks";
+import { BookDetailSkeleton } from "@/components/loading-skeletons";
 import { Button } from "@/components/ui/button";
 import BookCard from "@/components/BookCard";
 import CheckoutModal from "@/components/CheckoutModal";
@@ -30,11 +31,7 @@ export default function BookDetailPage() {
   const [previewOpen, setPreviewOpen] = useState(false);
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
+    return <BookDetailSkeleton />;
   }
 
   if (!book) {
