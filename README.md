@@ -60,6 +60,13 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+
+## Environment variables
+
+Use the existing `.env` file in the project root and fill in all credentials before running the app/functions.
+
+The project expects Supabase client keys for frontend and payment/email credentials for Edge Functions (PayStation + Resend).
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.

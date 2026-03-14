@@ -24,6 +24,7 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
+    const resendFromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@socialgeekbd.com";
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     if (!resendApiKey) {
@@ -137,7 +138,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "বই বাজার <noreply@socialgeekbd.com>",
+        from: `বই বাজার <${resendFromEmail}>`,
         to: [order.customer_email],
         subject: `📚 "${bookTitle}" — আপনার ই-বুক ডাউনলোড করুন`,
         html: emailHtml,
