@@ -1,24 +1,137 @@
-import { useSearchParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { CheckCircle, XCircle, AlertTriangle, ArrowRight, Download, Mail, RefreshCw, ShieldCheck, Phone, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+
+type PaymentPageStatus = "success" | "pending" | "failed" | "cancelled";
+
+function normalizeStatus(status: string | null): PaymentPageStatus {
+  switch (status) {
+    case "success":
+      return "success";
+    case "pending":
+      return "pending";
+    case "failed":
+      return "failed";
+    default:
+      return "cancelled";
+  }
+}
 
 export default function PaymentSuccess() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const status = searchParams.get("status");
   const orderId = searchParams.get("order_id");
+  const [status, setStatus] = useState<PaymentPageStatus>(normalizeStatus(searchParams.get("status")));
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const isSuccess = status === "success";
-  const isPending = status === "pending";
-  const isFailed = status === "failed";
+  useEffect(() => {
+    setStatus(normalizeStatus(searchParams.get("status")));
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (status !== "pending" || !orderId) {
+      return;
+    }
+
+    let cancelled = false;
+    let timeoutId: number | undefined;
+    let attempts = 0;
+
+    const pollPaymentStatus = async () => {
+      if (cancelled) {
+        return;
+      }
+
+      setIsRefreshing(true);
+
+      try {
+        const { data, error } = await supabase.functions.invoke("check-payment-status", {
+          body: { orderId },
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (error) {
+          console.error("Payment status check failed:", error);
+        } else if (data?.status && data.status !== "pending") {
+          const nextStatus = normalizeStatus(data.status);
+          setStatus(nextStatus);
+
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set("status", nextStatus);
+          navigate(`/payment-success?${nextParams.toString()}`, { replace: true });
+          return;
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Payment status polling error:", error);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRefreshing(false);
+        }
+      }
+
+      attempts += 1;
+      if (!cancelled && attempts < 12) {
+        timeoutId = window.setTimeout(pollPaymentStatus, 5000);
+      }
+    };
+
+    void pollPaymentStatus();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [navigate, orderId, searchParams, status]);
+
+  const handleManualRefresh = async () => {
+    if (!orderId || isRefreshing) {
+      return;
+    }
+
+    setIsRefreshing(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("check-payment-status", {
+        body: { orderId },
+      });
+
+      if (error) {
+        console.error("Manual payment status check failed:", error);
+        return;
+      }
+
+      if (data?.status) {
+        const nextStatus = normalizeStatus(data.status);
+        setStatus(nextStatus);
+
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set("status", nextStatus);
+        navigate(`/payment-success?${nextParams.toString()}`, { replace: true });
+      }
+    } catch (error) {
+      console.error("Manual payment status polling error:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {isSuccess ? (
+      {status === "success" ? (
         <SuccessView orderId={orderId} />
-      ) : isPending ? (
-        <PendingView orderId={orderId} />
-      ) : isFailed ? (
+      ) : status === "pending" ? (
+        <PendingView orderId={orderId} isRefreshing={isRefreshing} onRefresh={handleManualRefresh} />
+      ) : status === "failed" ? (
         <FailedView />
       ) : (
         <CancelledView />
@@ -198,7 +311,15 @@ function FailedView() {
   );
 }
 
-function PendingView({ orderId }: { orderId: string | null }) {
+function PendingView({
+  orderId,
+  isRefreshing,
+  onRefresh,
+}: {
+  orderId: string | null;
+  isRefreshing: boolean;
+  onRefresh: () => void;
+}) {
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -246,7 +367,7 @@ function PendingView({ orderId }: { orderId: string | null }) {
         className="space-y-3 mb-8"
       >
         {[
-          { icon: RefreshCw, text: "Reload this page after a short wait to check the latest order status" },
+          { icon: RefreshCw, text: isRefreshing ? "Checking the latest payment status now" : "This page checks PayStation again automatically for a confirmed status" },
           { icon: Mail, text: "Delivery email will be sent automatically after verification completes" },
           { icon: Phone, text: "If the status does not change, contact support with your order ID" },
         ].map((item, i) => (
@@ -265,11 +386,9 @@ function PendingView({ orderId }: { orderId: string | null }) {
         transition={{ delay: 0.65 }}
         className="flex flex-col gap-3"
       >
-        <Link to="/books">
-          <Button size="lg" className="w-full gap-2 font-bengali rounded-xl py-6">
-            <RefreshCw className="h-5 w-5" /> Try again later
-          </Button>
-        </Link>
+        <Button size="lg" className="w-full gap-2 font-bengali rounded-xl py-6" onClick={onRefresh} disabled={isRefreshing}>
+          <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} /> {isRefreshing ? "Checking now" : "Check again now"}
+        </Button>
         <Link to="/contact">
           <Button variant="outline" size="lg" className="w-full gap-2 font-bengali rounded-xl py-6">
             <Phone className="h-5 w-5" /> Contact support

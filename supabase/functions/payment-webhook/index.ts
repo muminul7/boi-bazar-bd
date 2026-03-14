@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getAppConfig, getPaymentConfig, getEnv } from "../_shared/config.ts";
 import { createCorsResponse } from "../_shared/cors.ts";
+import { verifyPayStationPayment } from "../_shared/paystation.ts";
 import { buildPaymentResultUrl, normalizePublicBaseUrl } from "../_shared/public-url.ts";
 
 function createPaymentRedirectResponse(baseUrl: string, orderId: string, status: string): Response {
@@ -9,161 +10,6 @@ function createPaymentRedirectResponse(baseUrl: string, orderId: string, status:
     status: 302,
     headers: { Location: buildPaymentResultUrl(baseUrl, orderId, status) },
   });
-}
-
-type VerificationState = "verified" | "pending" | "failed";
-
-type VerificationResult = {
-  state: VerificationState;
-  amount: number | null;
-  providerStatus: string;
-  message: string;
-  raw: unknown;
-};
-
-function sleep(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-function parseAmount(value: unknown): number | null {
-  if (value === null || value === undefined || value === "") {
-    return null;
-  }
-
-  const parsed = Number.parseFloat(String(value));
-  return Number.isFinite(parsed) ? parsed : null;
-}
-
-function parseVerificationResult(raw: any): VerificationResult {
-  const nested = raw?.data ?? raw?.transaction ?? raw;
-  const topStatus = String(raw?.status ?? raw?.pay_status ?? "").trim().toLowerCase();
-  const trxStatus = String(nested?.trx_status ?? nested?.status ?? "").trim().toLowerCase();
-  const providerStatus = trxStatus || topStatus;
-  const message = String(raw?.message ?? nested?.message ?? "").trim();
-  const messageLower = message.toLowerCase();
-  const code = String(raw?.status_code ?? "").trim();
-  const amount = parseAmount(
-    nested?.payment_amount ??
-    nested?.amount ??
-    nested?.request_amount ??
-    raw?.payment_amount ??
-    raw?.amount
-  );
-
-  if (code === "2001" && messageLower.includes("not found")) {
-    return { state: "pending", amount, providerStatus, message, raw };
-  }
-
-  if (
-    providerStatus.includes("pending") ||
-    providerStatus.includes("process") ||
-    messageLower.includes("processing")
-  ) {
-    return { state: "pending", amount, providerStatus, message, raw };
-  }
-
-  if (
-    ["successful", "success", "valid", "completed", "paid"].includes(providerStatus) ||
-    ["successful", "success", "valid", "completed", "paid"].includes(topStatus)
-  ) {
-    return { state: "verified", amount, providerStatus, message, raw };
-  }
-
-  if (
-    ["failed", "cancelled", "canceled", "declined", "invalid", "reversed"].includes(providerStatus) ||
-    ["failed", "cancelled", "canceled", "declined", "invalid", "reversed"].includes(topStatus)
-  ) {
-    return { state: "failed", amount, providerStatus, message, raw };
-  }
-
-  return { state: "pending", amount, providerStatus, message, raw };
-}
-
-async function fetchVerificationPayload(url: string, init: RequestInit): Promise<any> {
-  const response = await fetch(url, init);
-  const text = await response.text();
-
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error(`Unexpected PayStation verification response: ${text}`);
-  }
-}
-
-async function verifyWithPayStation(
-  merchantId: string,
-  transactionStatusUrl: string,
-  transactionStatusV2Url: string,
-  invoiceNumber: string,
-  trxId: string | null,
-): Promise<VerificationResult> {
-  let lastResult: VerificationResult = {
-    state: "pending",
-    amount: null,
-    providerStatus: "",
-    message: "Verification not completed yet",
-    raw: null,
-  };
-
-  for (let attempt = 0; attempt < 3; attempt += 1) {
-    const requests: Array<() => Promise<any>> = [];
-
-    if (trxId) {
-      requests.push(() =>
-        fetchVerificationPayload(transactionStatusV2Url, {
-          method: "POST",
-          headers: {
-            merchantId,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ trxId }),
-        })
-      );
-    }
-
-    requests.push(() =>
-      fetchVerificationPayload(transactionStatusUrl, {
-        method: "POST",
-        headers: {
-          merchantId,
-        },
-        body: new URLSearchParams({ invoice_number: invoiceNumber }),
-      })
-    );
-
-    for (const request of requests) {
-      try {
-        const raw = await request();
-        const parsed = parseVerificationResult(raw);
-        console.log("PayStation verify response:", JSON.stringify(raw));
-
-        if (parsed.state === "verified") {
-          return parsed;
-        }
-
-        if (parsed.state === "failed") {
-          return parsed;
-        }
-
-        lastResult = parsed;
-      } catch (error) {
-        console.error("PayStation verification request failed:", error);
-        lastResult = {
-          state: "pending",
-          amount: null,
-          providerStatus: "",
-          message: error instanceof Error ? error.message : "Verification request failed",
-          raw: null,
-        };
-      }
-    }
-
-    if (attempt < 2) {
-      await sleep((attempt + 1) * 1500);
-    }
-  }
-
-  return lastResult;
 }
 
 serve(async (req) => {
@@ -307,13 +153,13 @@ serve(async (req) => {
         return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
       }
 
-      const verification = await verifyWithPayStation(
+      const verification = await verifyPayStationPayment({
         merchantId,
-        paystationTransactionStatusUrl,
-        paystationTransactionStatusV2Url,
+        transactionStatusUrl: paystationTransactionStatusUrl,
+        transactionStatusV2Url: paystationTransactionStatusV2Url,
         invoiceNumber,
         trxId,
-      );
+      });
 
       if (verification.state === "pending") {
         console.warn("Payment verification still pending for invoice:", invoiceNumber, verification.message);
@@ -337,9 +183,11 @@ serve(async (req) => {
         return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
       }
 
+      const confirmedTransactionId = verification.trxId || trxId || invoiceNumber;
+
       await supabase.from("orders").update({
         payment_status: "paid",
-        transaction_id: trxId || invoiceNumber,
+        transaction_id: confirmedTransactionId,
         payment_method: "PayStation",
       }).eq("id", order.id);
 
