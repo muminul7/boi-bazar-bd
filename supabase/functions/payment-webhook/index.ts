@@ -1,20 +1,25 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { getAppConfig, getPaymentConfig, getEnv } from "../_shared/config.ts";
+import { createCorsResponse } from "../_shared/cors.ts";
+import { buildPaymentResultUrl, normalizePublicBaseUrl } from "../_shared/public-url.ts";
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+function createPaymentRedirectResponse(baseUrl: string, orderId: string, status: string): Response {
+  return new Response(null, {
+    status: 302,
+    headers: { Location: buildPaymentResultUrl(baseUrl, orderId, status) },
+  });
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse(null);
   }
 
   try {
     const url = new URL(req.url);
     const sig = url.searchParams.get("sig");
+    let returnTo = url.searchParams.get("return_to") || url.searchParams.get("opt_a");
 
     // Parse data from both URL params AND request body (POST form data or JSON)
     let status = url.searchParams.get("status") || url.searchParams.get("pay_status");
@@ -34,6 +39,7 @@ serve(async (req) => {
           status = body.status || body.pay_status || status;
           invoiceNumber = body.invoice_number || body.mer_txnid || invoiceNumber;
           trxId = body.trx_id || body.SP_transaction_id || body.bank_trx_id || trxId;
+          returnTo = body.return_to || body.opt_a || returnTo;
         } else if (contentType.includes("form")) {
           const formData = await req.formData();
           const bodyObj: Record<string, string> = {};
@@ -42,6 +48,7 @@ serve(async (req) => {
           status = bodyObj.status || bodyObj.pay_status || status;
           invoiceNumber = bodyObj.invoice_number || bodyObj.mer_txnid || invoiceNumber;
           trxId = bodyObj.trx_id || bodyObj.SP_transaction_id || bodyObj.bank_trx_id || trxId;
+          returnTo = bodyObj.return_to || bodyObj.opt_a || returnTo;
         } else {
           // Try parsing as text/URL-encoded
           const text = await req.text();
@@ -51,12 +58,14 @@ serve(async (req) => {
             status = body.status || body.pay_status || status;
             invoiceNumber = body.invoice_number || body.mer_txnid || invoiceNumber;
             trxId = body.trx_id || body.SP_transaction_id || body.bank_trx_id || trxId;
+            returnTo = body.return_to || body.opt_a || returnTo;
           } catch {
             // Try URL-encoded
             const params = new URLSearchParams(text);
             status = params.get("status") || params.get("pay_status") || status;
             invoiceNumber = params.get("invoice_number") || params.get("mer_txnid") || invoiceNumber;
             trxId = params.get("trx_id") || params.get("SP_transaction_id") || params.get("bank_trx_id") || trxId;
+            returnTo = params.get("return_to") || params.get("opt_a") || returnTo;
           }
         }
       } catch (bodyErr) {
@@ -97,6 +106,7 @@ serve(async (req) => {
     console.log("Webhook signature verified successfully");
 
     const { appBaseUrl, supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const redirectBaseUrl = normalizePublicBaseUrl(returnTo) ?? appBaseUrl;
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Find order by invoice number
@@ -113,10 +123,7 @@ serve(async (req) => {
 
     // Prevent duplicate processing
     if (order.payment_status === "paid") {
-      return new Response(null, {
-        status: 302,
-        headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=success` },
-      });
+      return createPaymentRedirectResponse(redirectBaseUrl, order.id, "success");
     }
 
     // Normalize status - PayStation may send different status values
@@ -128,15 +135,13 @@ serve(async (req) => {
     if (isSuccessful) {
       // --- MANDATORY PayStation verification ---
       let merchantId: string;
+      let paystationTransactionStatusUrl: string;
       try {
-        ({ paystationMerchantId: merchantId } = getPaymentConfig());
+        ({ paystationMerchantId: merchantId, paystationTransactionStatusUrl } = getPaymentConfig());
       } catch {
         console.error("PayStation credentials missing, cannot verify payment");
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
-        return new Response(null, {
-          status: 302,
-          headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=failed` },
-        });
+        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
       }
 
       // Verify the transaction with PayStation
@@ -147,7 +152,7 @@ serve(async (req) => {
         verifyFormData.append("trx_id", trxId || "");
         verifyFormData.append("password", password);
 
-        const verifyRes = await fetch("https://api.paystation.com.bd/transaction-status", {
+        const verifyRes = await fetch(paystationTransactionStatusUrl, {
           method: "POST",
           headers: {
             "merchantId": merchantId,
@@ -188,10 +193,7 @@ serve(async (req) => {
       if (!verified) {
         console.error("Payment verification FAILED for invoice:", invoiceNumber);
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
-        return new Response(null, {
-          status: 302,
-          headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=failed` },
-        });
+        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
       }
 
       // Verification passed — mark as paid
@@ -231,10 +233,7 @@ serve(async (req) => {
         console.error("Delivery email error:", emailErr);
       }
 
-      return new Response(null, {
-        status: 302,
-        headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=success` },
-      });
+      return createPaymentRedirectResponse(redirectBaseUrl, order.id, "success");
     }
 
     // Failed or Cancelled
@@ -243,10 +242,7 @@ serve(async (req) => {
       payment_status: paymentStatus,
     }).eq("id", order.id);
 
-    return new Response(null, {
-      status: 302,
-      headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=${paymentStatus}` },
-    });
+    return createPaymentRedirectResponse(redirectBaseUrl, order.id, paymentStatus);
   } catch (err) {
     console.error("Webhook error:", err);
     return new Response("Internal error", { status: 500 });

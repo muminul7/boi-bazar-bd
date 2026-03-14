@@ -67,6 +67,8 @@ Use the existing `.env` file in the project root and fill in all credentials bef
 
 The project expects Supabase client keys for frontend and payment/email credentials for Edge Functions (PayStation + Resend).
 
+Set `PAYSTATION_API_BASE_URL` to switch between live and sandbox PayStation endpoints. If omitted, it defaults to the live API at `https://api.paystation.com.bd`.
+
 Edge Functions now use a shared config convention at `supabase/functions/_shared/config.ts` to read and validate environment variables in one place.
 
 
@@ -78,7 +80,14 @@ Note: the top-level `supabase/` directory name is part of Supabase CLI conventio
 
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+You can deploy the frontend on Vercel as a Vite SPA.
+
+- The repo includes a `vercel.json` rewrite so client-side routes like `/books/:slug`, `/admin`, and `/payment-success` resolve to `index.html`.
+- On Vercel, set the frontend env vars `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and `VITE_SUPABASE_PROJECT_ID`.
+- Keep `SUPABASE_SERVICE_ROLE_KEY` out of Vercel frontend env vars. That key belongs only in Supabase Edge Function secrets.
+- After you know your Vercel production URL, set `APP_BASE_URL` in Supabase Edge Function secrets to that URL for download/error-page fallbacks.
+
+Lovable publishing is also supported through [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) via Share -> Publish.
 
 ## Can I connect a custom domain to my Lovable project?
 

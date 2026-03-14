@@ -11,6 +11,10 @@ export function getEnv(name: string, fallback = ""): string {
   return value && value.length > 0 ? value : fallback;
 }
 
+function trimTrailingSlash(value: string): string {
+  return value.replace(/\/+$/, "");
+}
+
 export function getAppConfig() {
   return {
     appBaseUrl: getEnv("APP_BASE_URL", "https://boi-bazar-bd.lovable.app"),
@@ -20,9 +24,16 @@ export function getAppConfig() {
 }
 
 export function getPaymentConfig() {
+  const paystationApiBaseUrl = trimTrailingSlash(
+    getEnv("PAYSTATION_API_BASE_URL", "https://api.paystation.com.bd")
+  );
+
   return {
     paystationMerchantId: requireEnv("PAYSTATION_MERCHANT_ID"),
     paystationPassword: requireEnv("PAYSTATION_PASSWORD"),
+    paystationApiBaseUrl,
+    paystationInitiatePaymentUrl: `${paystationApiBaseUrl}/initiate-payment`,
+    paystationTransactionStatusUrl: `${paystationApiBaseUrl}/transaction-status`,
   };
 }
 
