@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAppConfig } from "../_shared/config.ts";
 
 serve(async (req) => {
   try {
@@ -13,9 +14,8 @@ serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Find order by download token
     const { data: order, error } = await supabase
@@ -108,6 +108,7 @@ serve(async (req) => {
 });
 
 function errorPage(message: string): string {
+  const { appBaseUrl } = getAppConfig();
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ডাউনলোড - বই বাজার</title></head>
@@ -116,6 +117,6 @@ function errorPage(message: string): string {
   <div style="font-size:48px;margin-bottom:16px;">😔</div>
   <h2 style="color:#1e293b;margin:0 0 12px;">ডাউনলোড সমস্যা</h2>
   <p style="color:#64748b;line-height:1.6;margin:0 0 24px;">${message}</p>
-  <a href="${Deno.env.get("APP_BASE_URL") || "https://boi-bazar-bd.lovable.app"}" style="display:inline-block;background:#0d9488;color:#fff;text-decoration:none;padding:12px 32px;border-radius:8px;font-weight:bold;">হোমে ফিরে যান</a>
+  <a href="${appBaseUrl}" style="display:inline-block;background:#0d9488;color:#fff;text-decoration:none;padding:12px 32px;border-radius:8px;font-weight:bold;">হোমে ফিরে যান</a>
 </div></body></html>`;
 }

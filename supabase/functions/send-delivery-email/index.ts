@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAppConfig, getEmailConfig } from "../_shared/config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -21,18 +22,9 @@ serve(async (req) => {
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    const resendFromEmail = Deno.env.get("RESEND_FROM_EMAIL") || "noreply@socialgeekbd.com";
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    if (!resendApiKey) {
-      return new Response(JSON.stringify({ error: "RESEND_API_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const { resendApiKey, resendFromEmail } = getEmailConfig();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Fetch order with book details
     const { data: order, error: orderError } = await supabase

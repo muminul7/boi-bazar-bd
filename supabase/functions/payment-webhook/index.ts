@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAppConfig, getPaymentConfig, getEnv } from "../_shared/config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -68,7 +69,7 @@ serve(async (req) => {
     }
 
     // --- HMAC Signature Validation ---
-    const password = Deno.env.get("PAYSTATION_PASSWORD");
+    const password = getEnv("PAYSTATION_PASSWORD");
     if (!password || !sig) {
       console.error("Missing PAYSTATION_PASSWORD or signature");
       return new Response("Unauthorized", { status: 401 });
@@ -92,9 +93,8 @@ serve(async (req) => {
     }
     console.log("Webhook signature verified successfully");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { appBaseUrl, supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Find order by invoice number
     const { data: order } = await supabase
@@ -107,8 +107,6 @@ serve(async (req) => {
       console.error("Order not found for invoice:", invoiceNumber);
       return new Response("Order not found", { status: 404 });
     }
-
-    const appBaseUrl = Deno.env.get("APP_BASE_URL") || "https://boi-bazar-bd.lovable.app";
 
     // Prevent duplicate processing
     if (order.payment_status === "paid") {
@@ -126,9 +124,10 @@ serve(async (req) => {
 
     if (isSuccessful) {
       // --- MANDATORY PayStation verification ---
-      const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
-
-      if (!merchantId || !password) {
+      let merchantId: string;
+      try {
+        ({ paystationMerchantId: merchantId } = getPaymentConfig());
+      } catch {
         console.error("PayStation credentials missing, cannot verify payment");
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return new Response(null, {
@@ -219,7 +218,7 @@ serve(async (req) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseServiceKey}`,
+            "Authorization": `Bearer ${supabaseServiceRoleKey}`,
           },
           body: JSON.stringify({ orderId: order.id }),
         });
