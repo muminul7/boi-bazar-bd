@@ -63,11 +63,7 @@ This project is built with:
 
 ## Environment variables
 
-Create a local `.env` file from `.env.example` and fill in all credentials before running the app/functions:
-
-```sh
-cp .env.example .env
-```
+Use the existing `.env` file in the project root and fill in all credentials before running the app/functions.
 
 The project expects Supabase client keys for frontend and payment/email credentials for Edge Functions (PayStation + Resend).
 
