@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAppConfig, getPaymentConfig } from "../_shared/config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,9 +19,8 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Missing required fields: bookId, customerName, customerEmail" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // --- SERVER-SIDE PRICE VALIDATION ---
     // Fetch the real book price from the database
@@ -101,12 +101,7 @@ serve(async (req) => {
     }
 
     // PayStation credentials from secrets
-    const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
-    const password = Deno.env.get("PAYSTATION_PASSWORD");
-
-    if (!merchantId || !password) {
-      return new Response(JSON.stringify({ error: "Payment gateway not configured." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
+    const { paystationMerchantId: merchantId, paystationPassword: password } = getPaymentConfig();
 
     const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
 
