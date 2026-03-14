@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { getAppConfig, getPaymentConfig, getEnv } from "../_shared/config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,9 +17,12 @@ serve(async (req) => {
     const sig = url.searchParams.get("sig");
 
     // Parse data from both URL params AND request body (POST form data or JSON)
-    let status = url.searchParams.get("status");
-    let invoiceNumber = url.searchParams.get("invoice_number");
-    let trxId = url.searchParams.get("trx_id");
+    let status = url.searchParams.get("status") || url.searchParams.get("pay_status");
+    let invoiceNumber = url.searchParams.get("invoice_number") || url.searchParams.get("mer_txnid");
+    let trxId =
+      url.searchParams.get("trx_id") ||
+      url.searchParams.get("SP_transaction_id") ||
+      url.searchParams.get("bank_trx_id");
 
     // If not in URL params, try reading from POST body
     if (!invoiceNumber && req.method === "POST") {
@@ -60,7 +64,7 @@ serve(async (req) => {
       }
     }
 
-    console.log("Payment webhook received:", { method: req.method, status, invoiceNumber, trxId, hasSig: !!sig });
+    console.log("Payment webhook received:", { method: req.method, status, invoiceNumber, trxId, hasSig: !!sig, query: Object.fromEntries(url.searchParams.entries()) });
 
     if (!invoiceNumber) {
       console.error("Missing invoice_number. URL params:", Object.fromEntries(url.searchParams.entries()));
@@ -68,7 +72,7 @@ serve(async (req) => {
     }
 
     // --- HMAC Signature Validation ---
-    const password = Deno.env.get("PAYSTATION_PASSWORD");
+    const password = getEnv("PAYSTATION_PASSWORD");
     if (!password || !sig) {
       console.error("Missing PAYSTATION_PASSWORD or signature");
       return new Response("Unauthorized", { status: 401 });
@@ -92,9 +96,8 @@ serve(async (req) => {
     }
     console.log("Webhook signature verified successfully");
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { appBaseUrl, supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Find order by invoice number
     const { data: order } = await supabase
@@ -108,13 +111,11 @@ serve(async (req) => {
       return new Response("Order not found", { status: 404 });
     }
 
-    const origin = "https://boi-bazar-bd.lovable.app";
-
     // Prevent duplicate processing
     if (order.payment_status === "paid") {
       return new Response(null, {
         status: 302,
-        headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=success` },
+        headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=success` },
       });
     }
 
@@ -126,14 +127,15 @@ serve(async (req) => {
 
     if (isSuccessful) {
       // --- MANDATORY PayStation verification ---
-      const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
-
-      if (!merchantId || !password) {
+      let merchantId: string;
+      try {
+        ({ paystationMerchantId: merchantId } = getPaymentConfig());
+      } catch {
         console.error("PayStation credentials missing, cannot verify payment");
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return new Response(null, {
           status: 302,
-          headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=failed` },
+          headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=failed` },
         });
       }
 
@@ -188,7 +190,7 @@ serve(async (req) => {
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return new Response(null, {
           status: 302,
-          headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=failed` },
+          headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=failed` },
         });
       }
 
@@ -219,7 +221,7 @@ serve(async (req) => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${supabaseServiceKey}`,
+            "Authorization": `Bearer ${supabaseServiceRoleKey}`,
           },
           body: JSON.stringify({ orderId: order.id }),
         });
@@ -231,7 +233,7 @@ serve(async (req) => {
 
       return new Response(null, {
         status: 302,
-        headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=success` },
+        headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=success` },
       });
     }
 
@@ -243,7 +245,7 @@ serve(async (req) => {
 
     return new Response(null, {
       status: 302,
-      headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=${paymentStatus}` },
+      headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=${paymentStatus}` },
     });
   } catch (err) {
     console.error("Webhook error:", err);
