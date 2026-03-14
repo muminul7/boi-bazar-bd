@@ -108,13 +108,13 @@ serve(async (req) => {
       return new Response("Order not found", { status: 404 });
     }
 
-    const origin = "https://boi-bazar-bd.lovable.app";
+    const appBaseUrl = Deno.env.get("APP_BASE_URL") || "https://boi-bazar-bd.lovable.app";
 
     // Prevent duplicate processing
     if (order.payment_status === "paid") {
       return new Response(null, {
         status: 302,
-        headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=success` },
+        headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=success` },
       });
     }
 
@@ -133,7 +133,7 @@ serve(async (req) => {
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return new Response(null, {
           status: 302,
-          headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=failed` },
+          headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=failed` },
         });
       }
 
@@ -188,7 +188,7 @@ serve(async (req) => {
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return new Response(null, {
           status: 302,
-          headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=failed` },
+          headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=failed` },
         });
       }
 
@@ -231,7 +231,7 @@ serve(async (req) => {
 
       return new Response(null, {
         status: 302,
-        headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=success` },
+        headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=success` },
       });
     }
 
@@ -243,7 +243,7 @@ serve(async (req) => {
 
     return new Response(null, {
       status: 302,
-      headers: { Location: `${origin}/payment-success?order_id=${order.id}&status=${paymentStatus}` },
+      headers: { Location: `${appBaseUrl}/payment-success?order_id=${order.id}&status=${paymentStatus}` },
     });
   } catch (err) {
     console.error("Webhook error:", err);
