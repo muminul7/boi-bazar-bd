@@ -49,7 +49,10 @@ export default function AdminOrders() {
     switch (status) {
       case "paid": return "bg-green-100 text-green-800";
       case "pending": return "bg-yellow-100 text-yellow-800";
+      case "pending_verification": return "bg-amber-100 text-amber-800";
       case "failed": return "bg-red-100 text-red-800";
+      case "verification_failed": return "bg-red-100 text-red-800";
+      case "cancelled": return "bg-slate-100 text-slate-800";
       default: return "bg-muted text-muted-foreground";
     }
   };
@@ -58,7 +61,10 @@ export default function AdminOrders() {
     switch (status) {
       case "paid": return "পেইড";
       case "pending": return "পেন্ডিং";
+      case "pending_verification": return "যাচাই চলছে";
       case "failed": return "ব্যর্থ";
+      case "verification_failed": return "যাচাই ব্যর্থ";
+      case "cancelled": return "বাতিল";
       default: return status || "—";
     }
   };

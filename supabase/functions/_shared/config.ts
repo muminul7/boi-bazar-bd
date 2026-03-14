@@ -34,6 +34,7 @@ export function getPaymentConfig() {
     paystationApiBaseUrl,
     paystationInitiatePaymentUrl: `${paystationApiBaseUrl}/initiate-payment`,
     paystationTransactionStatusUrl: `${paystationApiBaseUrl}/transaction-status`,
+    paystationTransactionStatusV2Url: `${paystationApiBaseUrl}/v2/transaction-status`,
   };
 }
 

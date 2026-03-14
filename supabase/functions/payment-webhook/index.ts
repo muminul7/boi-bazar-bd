@@ -11,6 +11,161 @@ function createPaymentRedirectResponse(baseUrl: string, orderId: string, status:
   });
 }
 
+type VerificationState = "verified" | "pending" | "failed";
+
+type VerificationResult = {
+  state: VerificationState;
+  amount: number | null;
+  providerStatus: string;
+  message: string;
+  raw: unknown;
+};
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseAmount(value: unknown): number | null {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const parsed = Number.parseFloat(String(value));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function parseVerificationResult(raw: any): VerificationResult {
+  const nested = raw?.data ?? raw?.transaction ?? raw;
+  const topStatus = String(raw?.status ?? raw?.pay_status ?? "").trim().toLowerCase();
+  const trxStatus = String(nested?.trx_status ?? nested?.status ?? "").trim().toLowerCase();
+  const providerStatus = trxStatus || topStatus;
+  const message = String(raw?.message ?? nested?.message ?? "").trim();
+  const messageLower = message.toLowerCase();
+  const code = String(raw?.status_code ?? "").trim();
+  const amount = parseAmount(
+    nested?.payment_amount ??
+    nested?.amount ??
+    nested?.request_amount ??
+    raw?.payment_amount ??
+    raw?.amount
+  );
+
+  if (code === "2001" && messageLower.includes("not found")) {
+    return { state: "pending", amount, providerStatus, message, raw };
+  }
+
+  if (
+    providerStatus.includes("pending") ||
+    providerStatus.includes("process") ||
+    messageLower.includes("processing")
+  ) {
+    return { state: "pending", amount, providerStatus, message, raw };
+  }
+
+  if (
+    ["successful", "success", "valid", "completed", "paid"].includes(providerStatus) ||
+    ["successful", "success", "valid", "completed", "paid"].includes(topStatus)
+  ) {
+    return { state: "verified", amount, providerStatus, message, raw };
+  }
+
+  if (
+    ["failed", "cancelled", "canceled", "declined", "invalid", "reversed"].includes(providerStatus) ||
+    ["failed", "cancelled", "canceled", "declined", "invalid", "reversed"].includes(topStatus)
+  ) {
+    return { state: "failed", amount, providerStatus, message, raw };
+  }
+
+  return { state: "pending", amount, providerStatus, message, raw };
+}
+
+async function fetchVerificationPayload(url: string, init: RequestInit): Promise<any> {
+  const response = await fetch(url, init);
+  const text = await response.text();
+
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`Unexpected PayStation verification response: ${text}`);
+  }
+}
+
+async function verifyWithPayStation(
+  merchantId: string,
+  transactionStatusUrl: string,
+  transactionStatusV2Url: string,
+  invoiceNumber: string,
+  trxId: string | null,
+): Promise<VerificationResult> {
+  let lastResult: VerificationResult = {
+    state: "pending",
+    amount: null,
+    providerStatus: "",
+    message: "Verification not completed yet",
+    raw: null,
+  };
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const requests: Array<() => Promise<any>> = [];
+
+    if (trxId) {
+      requests.push(() =>
+        fetchVerificationPayload(transactionStatusV2Url, {
+          method: "POST",
+          headers: {
+            merchantId,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ trxId }),
+        })
+      );
+    }
+
+    requests.push(() =>
+      fetchVerificationPayload(transactionStatusUrl, {
+        method: "POST",
+        headers: {
+          merchantId,
+        },
+        body: new URLSearchParams({ invoice_number: invoiceNumber }),
+      })
+    );
+
+    for (const request of requests) {
+      try {
+        const raw = await request();
+        const parsed = parseVerificationResult(raw);
+        console.log("PayStation verify response:", JSON.stringify(raw));
+
+        if (parsed.state === "verified") {
+          return parsed;
+        }
+
+        if (parsed.state === "failed") {
+          return parsed;
+        }
+
+        lastResult = parsed;
+      } catch (error) {
+        console.error("PayStation verification request failed:", error);
+        lastResult = {
+          state: "pending",
+          amount: null,
+          providerStatus: "",
+          message: error instanceof Error ? error.message : "Verification request failed",
+          raw: null,
+        };
+      }
+    }
+
+    if (attempt < 2) {
+      await sleep((attempt + 1) * 1500);
+    }
+  }
+
+  return lastResult;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return createCorsResponse(null);
@@ -21,7 +176,6 @@ serve(async (req) => {
     const sig = url.searchParams.get("sig");
     let returnTo = url.searchParams.get("return_to") || url.searchParams.get("opt_a");
 
-    // Parse data from both URL params AND request body (POST form data or JSON)
     let status = url.searchParams.get("status") || url.searchParams.get("pay_status");
     let invoiceNumber = url.searchParams.get("invoice_number") || url.searchParams.get("mer_txnid");
     let trxId =
@@ -29,7 +183,6 @@ serve(async (req) => {
       url.searchParams.get("SP_transaction_id") ||
       url.searchParams.get("bank_trx_id");
 
-    // If not in URL params, try reading from POST body
     if (!invoiceNumber && req.method === "POST") {
       try {
         const contentType = req.headers.get("content-type") || "";
@@ -43,14 +196,15 @@ serve(async (req) => {
         } else if (contentType.includes("form")) {
           const formData = await req.formData();
           const bodyObj: Record<string, string> = {};
-          formData.forEach((value, key) => { bodyObj[key] = value.toString(); });
+          formData.forEach((value, key) => {
+            bodyObj[key] = value.toString();
+          });
           console.log("Webhook form body:", JSON.stringify(bodyObj));
           status = bodyObj.status || bodyObj.pay_status || status;
           invoiceNumber = bodyObj.invoice_number || bodyObj.mer_txnid || invoiceNumber;
           trxId = bodyObj.trx_id || bodyObj.SP_transaction_id || bodyObj.bank_trx_id || trxId;
           returnTo = bodyObj.return_to || bodyObj.opt_a || returnTo;
         } else {
-          // Try parsing as text/URL-encoded
           const text = await req.text();
           console.log("Webhook raw body:", text);
           try {
@@ -60,7 +214,6 @@ serve(async (req) => {
             trxId = body.trx_id || body.SP_transaction_id || body.bank_trx_id || trxId;
             returnTo = body.return_to || body.opt_a || returnTo;
           } catch {
-            // Try URL-encoded
             const params = new URLSearchParams(text);
             status = params.get("status") || params.get("pay_status") || status;
             invoiceNumber = params.get("invoice_number") || params.get("mer_txnid") || invoiceNumber;
@@ -73,14 +226,20 @@ serve(async (req) => {
       }
     }
 
-    console.log("Payment webhook received:", { method: req.method, status, invoiceNumber, trxId, hasSig: !!sig, query: Object.fromEntries(url.searchParams.entries()) });
+    console.log("Payment webhook received:", {
+      method: req.method,
+      status,
+      invoiceNumber,
+      trxId,
+      hasSig: !!sig,
+      query: Object.fromEntries(url.searchParams.entries()),
+    });
 
     if (!invoiceNumber) {
       console.error("Missing invoice_number. URL params:", Object.fromEntries(url.searchParams.entries()));
       return new Response("Missing invoice_number", { status: 400 });
     }
 
-    // --- HMAC Signature Validation ---
     const password = getEnv("PAYSTATION_PASSWORD");
     if (!password || !sig) {
       console.error("Missing PAYSTATION_PASSWORD or signature");
@@ -97,7 +256,7 @@ serve(async (req) => {
     );
     const expectedSig = Array.from(
       new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(invoiceNumber)))
-    ).map(b => b.toString(16).padStart(2, "0")).join("");
+    ).map((b) => b.toString(16).padStart(2, "0")).join("");
 
     if (sig !== expectedSig) {
       console.error("Invalid webhook signature!", { expected: expectedSig, received: sig });
@@ -109,101 +268,81 @@ serve(async (req) => {
     const redirectBaseUrl = normalizePublicBaseUrl(returnTo) ?? appBaseUrl;
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
-    // Find order by invoice number
-    const { data: order } = await supabase
+    const transactionCandidates = [invoiceNumber, trxId].filter((value): value is string => Boolean(value));
+    const { data: orders } = await supabase
       .from("orders")
       .select("*")
-      .eq("transaction_id", invoiceNumber)
-      .single();
+      .in("transaction_id", transactionCandidates)
+      .limit(1);
+
+    const order = orders?.[0];
 
     if (!order) {
       console.error("Order not found for invoice:", invoiceNumber);
       return new Response("Order not found", { status: 404 });
     }
 
-    // Prevent duplicate processing
     if (order.payment_status === "paid") {
       return createPaymentRedirectResponse(redirectBaseUrl, order.id, "success");
     }
 
-    // Normalize status - PayStation may send different status values
     const normalizedStatus = (status || "").toLowerCase();
     const isSuccessful = normalizedStatus === "successful" || normalizedStatus === "success" || normalizedStatus === "valid";
 
     console.log("Normalized status:", normalizedStatus, "isSuccessful:", isSuccessful);
 
     if (isSuccessful) {
-      // --- MANDATORY PayStation verification ---
       let merchantId: string;
       let paystationTransactionStatusUrl: string;
+      let paystationTransactionStatusV2Url: string;
       try {
-        ({ paystationMerchantId: merchantId, paystationTransactionStatusUrl } = getPaymentConfig());
+        ({
+          paystationMerchantId: merchantId,
+          paystationTransactionStatusUrl,
+          paystationTransactionStatusV2Url,
+        } = getPaymentConfig());
       } catch {
         console.error("PayStation credentials missing, cannot verify payment");
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
       }
 
-      // Verify the transaction with PayStation
-      let verified = false;
-      try {
-        const verifyFormData = new FormData();
-        verifyFormData.append("invoice_number", invoiceNumber);
-        verifyFormData.append("trx_id", trxId || "");
-        verifyFormData.append("password", password);
+      const verification = await verifyWithPayStation(
+        merchantId,
+        paystationTransactionStatusUrl,
+        paystationTransactionStatusV2Url,
+        invoiceNumber,
+        trxId,
+      );
 
-        const verifyRes = await fetch(paystationTransactionStatusUrl, {
-          method: "POST",
-          headers: {
-            "merchantId": merchantId,
-          },
-          body: verifyFormData,
-        });
-        const verifyData = await verifyRes.json();
-        console.log("PayStation verify response:", JSON.stringify(verifyData));
-
-        const verifyStatus = (verifyData.status || verifyData.pay_status || "").toLowerCase();
-        if (
-          verifyData.status_code === "200" ||
-          verifyData.status_code === 200 ||
-          verifyStatus === "successful" ||
-          verifyStatus === "success" ||
-          verifyStatus === "valid"
-        ) {
-          const verifiedAmount = parseFloat(verifyData.amount || verifyData.payment_amount || "0");
-          if (verifiedAmount > 0 && Math.abs(verifiedAmount - order.amount) <= 1) {
-            verified = true;
-          } else {
-            console.error("Amount mismatch!", { expected: order.amount, received: verifiedAmount });
-            // If amount is 0 but status is success, still verify (some gateways don't return amount)
-            if (verifiedAmount === 0 && (verifyStatus === "successful" || verifyStatus === "success")) {
-              console.log("Amount is 0 but status is success, marking as verified");
-              verified = true;
-            }
-          }
-        }
-      } catch (e) {
-        console.error("PayStation verification request failed:", e);
-        // If verification API itself fails, check if we got a successful callback with valid sig
-        // The HMAC sig already validates the request came from our system
-        console.log("Falling back to signature-based verification since API call failed");
-        verified = true;
+      if (verification.state === "pending") {
+        console.warn("Payment verification still pending for invoice:", invoiceNumber, verification.message);
+        await supabase.from("orders").update({ payment_status: "pending_verification" }).eq("id", order.id);
+        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "pending");
       }
 
-      if (!verified) {
-        console.error("Payment verification FAILED for invoice:", invoiceNumber);
+      if (
+        verification.amount !== null &&
+        verification.amount > 0 &&
+        Math.abs(verification.amount - order.amount) > 1
+      ) {
+        console.error("Amount mismatch!", { expected: order.amount, received: verification.amount });
         await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
         return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
       }
 
-      // Verification passed — mark as paid
+      if (verification.state !== "verified") {
+        console.error("Payment verification FAILED for invoice:", invoiceNumber, verification.message);
+        await supabase.from("orders").update({ payment_status: "verification_failed" }).eq("id", order.id);
+        return createPaymentRedirectResponse(redirectBaseUrl, order.id, "failed");
+      }
+
       await supabase.from("orders").update({
         payment_status: "paid",
         transaction_id: trxId || invoiceNumber,
         payment_method: "PayStation",
       }).eq("id", order.id);
 
-      // Update coupon usage if applicable
       if (order.coupon_code) {
         const { data: coupon } = await supabase
           .from("coupons")
@@ -217,7 +356,6 @@ serve(async (req) => {
         }
       }
 
-      // Send delivery email
       try {
         const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-delivery-email`, {
           method: "POST",
@@ -236,7 +374,6 @@ serve(async (req) => {
       return createPaymentRedirectResponse(redirectBaseUrl, order.id, "success");
     }
 
-    // Failed or Cancelled
     const paymentStatus = normalizedStatus.includes("cancel") ? "cancelled" : "failed";
     await supabase.from("orders").update({
       payment_status: paymentStatus,

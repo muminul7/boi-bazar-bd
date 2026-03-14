@@ -96,7 +96,14 @@ export default function Dashboard() {
     const map = new Map<string, number>();
     filteredOrders.forEach(o => {
       const s = o.payment_status || "unknown";
-      const label = s === "paid" ? "সফল" : s === "pending" ? "পেন্ডিং" : s === "failed" ? "ব্যর্থ" : s === "cancelled" ? "বাতিল" : s;
+      const label =
+        s === "paid" ? "সফল" :
+        s === "pending" ? "পেন্ডিং" :
+        s === "pending_verification" ? "যাচাই চলছে" :
+        s === "failed" ? "ব্যর্থ" :
+        s === "verification_failed" ? "যাচাই ব্যর্থ" :
+        s === "cancelled" ? "বাতিল" :
+        s;
       map.set(label, (map.get(label) || 0) + 1);
     });
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
