@@ -17,9 +17,12 @@ serve(async (req) => {
     const sig = url.searchParams.get("sig");
 
     // Parse data from both URL params AND request body (POST form data or JSON)
-    let status = url.searchParams.get("status");
-    let invoiceNumber = url.searchParams.get("invoice_number");
-    let trxId = url.searchParams.get("trx_id");
+    let status = url.searchParams.get("status") || url.searchParams.get("pay_status");
+    let invoiceNumber = url.searchParams.get("invoice_number") || url.searchParams.get("mer_txnid");
+    let trxId =
+      url.searchParams.get("trx_id") ||
+      url.searchParams.get("SP_transaction_id") ||
+      url.searchParams.get("bank_trx_id");
 
     // If not in URL params, try reading from POST body
     if (!invoiceNumber && req.method === "POST") {
@@ -61,7 +64,7 @@ serve(async (req) => {
       }
     }
 
-    console.log("Payment webhook received:", { method: req.method, status, invoiceNumber, trxId, hasSig: !!sig });
+    console.log("Payment webhook received:", { method: req.method, status, invoiceNumber, trxId, hasSig: !!sig, query: Object.fromEntries(url.searchParams.entries()) });
 
     if (!invoiceNumber) {
       console.error("Missing invoice_number. URL params:", Object.fromEntries(url.searchParams.entries()));
