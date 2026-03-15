@@ -70,6 +70,8 @@ Set `PAYSTATION_API_BASE_URL` to switch between live and sandbox PayStation endp
 
 Edge Functions now use a shared config convention at `supabase/functions/_shared/config.ts` to read and validate environment variables in one place.
 
+The checkout flow also includes a Vercel server-side route at `api/initiate-payment.ts`. That route is intended to cover production if the Supabase `initiate-payment` function is missing or not deployed yet.
+
 
 ## Project organization conventions
 
@@ -83,8 +85,9 @@ You can deploy the frontend on Vercel as a Vite SPA.
 
 - The repo includes a `vercel.json` rewrite so client-side routes like `/books/:slug`, `/admin`, and `/payment-success` resolve to `index.html`.
 - On Vercel, set the frontend env vars `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, and `VITE_SUPABASE_PROJECT_ID`.
-- Keep `SUPABASE_SERVICE_ROLE_KEY` out of Vercel frontend env vars. That key belongs only in Supabase Edge Function secrets.
-- After you know your Vercel production URL, set `APP_BASE_URL` in Supabase Edge Function secrets to that URL for download/error-page fallbacks.
+- For the server-side `api/initiate-payment` route, also set server-only Vercel env vars: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `PAYSTATION_MERCHANT_ID`, `PAYSTATION_PASSWORD`, `PAYSTATION_API_BASE_URL`, and `APP_BASE_URL`.
+- Do not prefix server-only secrets with `VITE_`. Vite only exposes `VITE_*` vars to the browser, so the non-`VITE_` vars stay server-side in Vercel Functions.
+- After you know your Vercel production URL, set `APP_BASE_URL` in both Vercel server env vars and Supabase Edge Function secrets so payment redirects and email/download fallbacks use the correct domain.
 
 Lovable publishing is also supported through [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) via Share -> Publish.
 

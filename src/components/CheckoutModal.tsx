@@ -14,10 +14,55 @@ interface CheckoutModalProps {
 }
 
 type PaymentMethod = "paystation";
+type PaymentPayload = {
+  bookId: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  billingAddress: string;
+  couponCode: string | null;
+};
+type PaymentInitResponse = {
+  gatewayUrl?: string;
+  error?: string;
+  details?: string;
+};
 
 const paymentMethods: { id: PaymentMethod; label: string; desc: string; emoji: string }[] = [
   { id: "paystation", label: "PayStation", desc: "কার্ড, বিকাশ, নগদ, রকেট সব সাপোর্ট", emoji: "💳" },
 ];
+
+async function startPayment(body: PaymentPayload): Promise<PaymentInitResponse> {
+  const apiResponse = await fetch("/api/initiate-payment", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  const apiContentType = apiResponse.headers.get("content-type") || "";
+  const apiData = apiContentType.includes("application/json")
+    ? await apiResponse.json().catch(() => null)
+    : null;
+  const apiRouteMissing = apiResponse.status === 404 && !apiData;
+
+  if (!apiRouteMissing) {
+    if (!apiResponse.ok) {
+      throw new Error(apiData?.error || apiData?.details || `Payment request failed (${apiResponse.status})`);
+    }
+
+    return apiData as PaymentInitResponse;
+  }
+
+  const { data, error } = await supabase.functions.invoke("initiate-payment", { body });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? {}) as PaymentInitResponse;
+}
 
 export default function CheckoutModal({ open, onClose, book }: CheckoutModalProps) {
   const { toast } = useToast();
@@ -67,28 +112,25 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
   const handlePayment = async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("initiate-payment", {
-        body: {
-          bookId: book.id,
-          customerName: form.name,
-          customerEmail: form.email,
-          customerPhone: form.phone,
-          billingAddress: form.address,
-          couponCode: couponApplied ? coupon.toUpperCase() : null,
-        },
+      const data = await startPayment({
+        bookId: book.id,
+        customerName: form.name,
+        customerEmail: form.email,
+        customerPhone: form.phone,
+        billingAddress: form.address,
+        couponCode: couponApplied ? coupon.toUpperCase() : null,
       });
 
-      if (error) throw error;
-
       if (data?.gatewayUrl) {
-        // Redirect to SSLCommerz payment page
+        // Redirect to PayStation payment page
         window.location.href = data.gatewayUrl;
       } else {
         throw new Error(data?.error || "Payment gateway error");
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Payment error:", err);
-      toast({ title: "পেমেন্ট ত্রুটি", description: err.message || "পেমেন্ট শুরু করতে সমস্যা হয়েছে।", variant: "destructive" });
+      const errorMessage = err instanceof Error ? err.message : "পেমেন্ট শুরু করতে সমস্যা হয়েছে।";
+      toast({ title: "পেমেন্ট ত্রুটি", description: errorMessage, variant: "destructive" });
     } finally {
       setLoading(false);
     }
