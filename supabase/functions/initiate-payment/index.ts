@@ -6,7 +6,7 @@ import { resolveClientBaseUrl } from "../_shared/public-url.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return createCorsResponse(null);
+    return createCorsResponse(null, { status: 204 }, req);
   }
 
   try {
@@ -16,7 +16,7 @@ serve(async (req) => {
       return createCorsResponse(JSON.stringify({ error: "Missing required fields: bookId, customerName, customerEmail" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      });
+      }, req);
     }
 
     const { appBaseUrl, supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
@@ -34,14 +34,14 @@ serve(async (req) => {
       return createCorsResponse(JSON.stringify({ error: "Book not found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
-      });
+      }, req);
     }
 
     if (book.active === false) {
       return createCorsResponse(JSON.stringify({ error: "This book is currently unavailable" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      });
+      }, req);
     }
 
     let finalAmount = book.price;
@@ -106,7 +106,7 @@ serve(async (req) => {
       return createCorsResponse(JSON.stringify({ error: "Failed to create order" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      });
+      }, req);
     }
 
     // PayStation credentials from secrets
@@ -167,19 +167,19 @@ serve(async (req) => {
         gatewayUrl: payData.payment_url,
         orderId: order.id,
         invoiceNumber,
-      }), { headers: { "Content-Type": "application/json" } });
+      }), { headers: { "Content-Type": "application/json" } }, req);
     } else {
       console.error("PayStation error:", payData);
       return createCorsResponse(JSON.stringify({ error: "Payment gateway error", details: payData.message || "Unknown error" }), {
         status: 500,
         headers: { "Content-Type": "application/json" },
-      });
+      }, req);
     }
   } catch (err) {
     console.error("Error:", err);
     return createCorsResponse(JSON.stringify({ error: err.message }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
-    });
+    }, req);
   }
 });
