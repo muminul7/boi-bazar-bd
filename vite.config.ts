@@ -3,7 +3,7 @@ import { defineConfig, loadEnv, type Connect, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
-import initiatePaymentHandler from "./api/initiate-payment";
+import initiatePaymentHandler, { type PaymentResponse } from "./src/server/payments/initiatePayment";
 
 type DevRequest = IncomingMessage & { body?: unknown };
 
@@ -35,7 +35,7 @@ function attachPaymentRoute(middlewares: Connect.ServerStack) {
 
     try {
       const devRequest = req as DevRequest;
-      const devResponse = {
+      const devResponse: PaymentResponse = {
         status(code: number) {
           res.statusCode = code;
           return devResponse;
