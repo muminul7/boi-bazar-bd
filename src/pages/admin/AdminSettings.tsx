@@ -1,11 +1,12 @@
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminSettingsSkeleton } from "@/components/loading-skeletons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Settings, Facebook, Save, Loader2, Globe, Code, ImageIcon, Upload, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { Textarea } from "@/components/ui/textarea";
 
 interface SettingsMap {
@@ -119,7 +120,7 @@ export default function AdminSettings() {
   };
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>;
+    return <AdminSettingsSkeleton />;
   }
 
   return (

@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AdminTableSkeleton } from "@/components/loading-skeletons";
 import { Plus, Pencil, Trash2, Star, MessageSquare } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Book = Tables<"books">;
@@ -148,6 +150,23 @@ export default function AdminReviews() {
   };
 
   const selectedBook = books.find((b) => b.id === selectedBookId);
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-56" />
+        </div>
+        <Card className="shadow-brand-sm">
+          <CardContent className="space-y-3 p-4">
+            <Skeleton className="h-4 w-32" />
+            <Skeleton className="h-10 w-full max-w-md rounded-xl" />
+          </CardContent>
+        </Card>
+        <AdminTableSkeleton rows={5} columns={5} />
+      </div>
+    );
+  }
 
   return (
     <div>

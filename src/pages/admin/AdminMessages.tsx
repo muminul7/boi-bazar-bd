@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminTableContentSkeleton } from "@/components/loading-skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Eye, Trash2, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Message = {
@@ -55,7 +56,9 @@ export default function AdminMessages() {
       <Card className="shadow-brand-sm">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>
+            <div className="p-6">
+              <AdminTableContentSkeleton rows={6} columns={6} />
+            </div>
           ) : messages.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground font-bengali">কোনো বার্তা আসেনি।</div>
           ) : (

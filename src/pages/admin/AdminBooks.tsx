@@ -1,16 +1,27 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminTableContentSkeleton } from "@/components/loading-skeletons";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Pencil, Trash2, Upload, FileText, Image, CheckCircle, Loader2, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import type { Tables } from "@/integrations/supabase/types";
+import { deleteBookWithDependencies } from "./deleteBook";
 
 type Book = Tables<"books">;
 
@@ -24,6 +35,8 @@ export default function AdminBooks() {
   const [editingBook, setEditingBook] = useState<Book | null>(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [ebookUploading, setEbookUploading] = useState(false);
+  const [deletingBookId, setDeletingBookId] = useState<string | null>(null);
+  const [bookPendingDelete, setBookPendingDelete] = useState<Book | null>(null);
   const { toast } = useToast();
 
   const [form, setForm] = useState({
@@ -152,12 +165,29 @@ export default function AdminBooks() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("আপনি কি এই বই মুছতে চান?")) return;
-    const { error } = await supabase.from("books").delete().eq("id", id);
-    if (error) { toast({ title: "ত্রুটি", description: error.message, variant: "destructive" }); return; }
-    toast({ title: "বই মুছে ফেলা হয়েছে" });
-    fetchBooks();
+  const handleDeleteWithCleanup = async (id: string) => {
+    setDeletingBookId(id);
+    try {
+      await deleteBookWithDependencies(supabase, id);
+      toast({ title: "বই মুছে ফেলা হয়েছে" });
+      await fetchBooks();
+    } catch (err: any) {
+      toast({ title: "ত্রুটি", description: err.message, variant: "destructive" });
+    } finally {
+      setDeletingBookId(null);
+    }
+  };
+
+  const handleDeleteRequest = (book: Book) => {
+    if (deletingBookId) return;
+    setBookPendingDelete(book);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!bookPendingDelete) return;
+    const bookId = bookPendingDelete.id;
+    setBookPendingDelete(null);
+    await handleDeleteWithCleanup(bookId);
   };
 
   // Tag-like list helpers
@@ -427,7 +457,9 @@ export default function AdminBooks() {
       <Card className="shadow-brand-sm">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>
+            <div className="p-6">
+              <AdminTableContentSkeleton rows={6} columns={7} />
+            </div>
           ) : books.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground font-bengali">কোনো বই পাওয়া যায়নি। উপরে "নতুন বই" বাটনে ক্লিক করুন।</div>
           ) : (
@@ -485,7 +517,15 @@ export default function AdminBooks() {
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-1">
                         <Button variant="ghost" size="icon" onClick={() => openEdit(book)}><Pencil className="h-4 w-4" /></Button>
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(book.id)} className="text-destructive hover:text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteRequest(book)}
+                          disabled={deletingBookId === book.id}
+                          className="text-destructive hover:text-destructive"
+                        >
+                          {deletingBookId === book.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                        </Button>
                       </div>
                     </TableCell>
                   </TableRow>
@@ -495,6 +535,47 @@ export default function AdminBooks() {
           )}
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={!!bookPendingDelete}
+        onOpenChange={(open) => {
+          if (!open && !deletingBookId) {
+            setBookPendingDelete(null);
+          }
+        }}
+      >
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-bengali text-left text-xl">
+              বইটি মুছে ফেলবেন?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="font-bengali text-left leading-6">
+              <span className="mb-2 block font-semibold text-foreground">
+                {bookPendingDelete?.title}
+              </span>
+              <span className="block">
+                এই কাজটি স্থায়ী। বইটি সাইট ও ড্যাশবোর্ড থেকে সরিয়ে দেওয়া হবে, তবে আগের অর্ডার ইতিহাস সংরক্ষিত থাকবে।
+              </span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="gap-2">
+            <AlertDialogCancel asChild>
+              <Button variant="outline" className="font-bengali" disabled={!!deletingBookId}>
+                বাতিল
+              </Button>
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              onClick={handleDeleteConfirm}
+              disabled={!bookPendingDelete || !!deletingBookId}
+              className="gap-2 bg-destructive font-bengali text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deletingBookId === bookPendingDelete?.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+              মুছে ফেলুন
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

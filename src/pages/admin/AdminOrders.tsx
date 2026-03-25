@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminTableContentSkeleton } from "@/components/loading-skeletons";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Mail, Eye } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 type Order = {
@@ -49,7 +50,10 @@ export default function AdminOrders() {
     switch (status) {
       case "paid": return "bg-green-100 text-green-800";
       case "pending": return "bg-yellow-100 text-yellow-800";
+      case "pending_verification": return "bg-amber-100 text-amber-800";
       case "failed": return "bg-red-100 text-red-800";
+      case "verification_failed": return "bg-red-100 text-red-800";
+      case "cancelled": return "bg-slate-100 text-slate-800";
       default: return "bg-muted text-muted-foreground";
     }
   };
@@ -58,7 +62,10 @@ export default function AdminOrders() {
     switch (status) {
       case "paid": return "পেইড";
       case "pending": return "পেন্ডিং";
+      case "pending_verification": return "যাচাই চলছে";
       case "failed": return "ব্যর্থ";
+      case "verification_failed": return "যাচাই ব্যর্থ";
+      case "cancelled": return "বাতিল";
       default: return status || "—";
     }
   };
@@ -90,7 +97,9 @@ export default function AdminOrders() {
       <Card className="shadow-brand-sm">
         <CardContent className="p-0">
           {loading ? (
-            <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>
+            <div className="p-6">
+              <AdminTableContentSkeleton rows={6} columns={7} />
+            </div>
           ) : orders.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground font-bengali">এখনো কোনো অর্ডার আসেনি।</div>
           ) : (

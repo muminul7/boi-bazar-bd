@@ -1,37 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
-};
+import { getAppConfig, getEmailConfig } from "../_shared/config.ts";
+import { createCorsResponse } from "../_shared/cors.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse(null);
   }
 
   try {
     const { orderId } = await req.json();
 
     if (!orderId) {
-      return new Response(JSON.stringify({ error: "Missing orderId" }), {
+      return createCorsResponse(JSON.stringify({ error: "Missing orderId" }), {
         status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-    if (!resendApiKey) {
-      return new Response(JSON.stringify({ error: "RESEND_API_KEY not configured" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
+    const { supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const { resendApiKey, resendFromEmail } = getEmailConfig();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Fetch order with book details
     const { data: order, error: orderError } = await supabase
@@ -42,15 +31,15 @@ serve(async (req) => {
 
     if (orderError || !order) {
       console.error("Order not found:", orderError);
-      return new Response(JSON.stringify({ error: "Order not found" }), {
+      return createCorsResponse(JSON.stringify({ error: "Order not found" }), {
         status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
     }
 
     if (order.delivery_email_sent) {
-      return new Response(JSON.stringify({ message: "Email already sent" }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return createCorsResponse(JSON.stringify({ message: "Email already sent" }), {
+        headers: { "Content-Type": "application/json" },
       });
     }
 
@@ -137,7 +126,7 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "বই বাজার <noreply@socialgeekbd.com>",
+        from: `বই বাজার <${resendFromEmail}>`,
         to: [order.customer_email],
         subject: `📚 "${bookTitle}" — আপনার ই-বুক ডাউনলোড করুন`,
         html: emailHtml,
@@ -151,21 +140,21 @@ serve(async (req) => {
       // Mark email as sent
       await supabase.from("orders").update({ delivery_email_sent: true }).eq("id", orderId);
 
-      return new Response(JSON.stringify({ success: true, emailId: emailData.id }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      return createCorsResponse(JSON.stringify({ success: true, emailId: emailData.id }), {
+        headers: { "Content-Type": "application/json" },
       });
     } else {
       console.error("Resend error:", emailData);
-      return new Response(JSON.stringify({ error: "Failed to send email", details: emailData }), {
+      return createCorsResponse(JSON.stringify({ error: "Failed to send email", details: emailData }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json" },
       });
     }
   } catch (err) {
     console.error("Error:", err);
-    return new Response(JSON.stringify({ error: err.message }), {
+    return createCorsResponse(JSON.stringify({ error: err.message }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
     });
   }
 });

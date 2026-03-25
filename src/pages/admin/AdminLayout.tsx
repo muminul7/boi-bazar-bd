@@ -1,17 +1,14 @@
 import { Outlet } from "react-router-dom";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { AdminLayoutSkeleton } from "@/components/loading-skeletons";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { useAdminAuth } from "@/hooks/useAdminAuth";
 
 export default function AdminLayout() {
   const { loading } = useAdminAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center font-bengali text-muted-foreground">লোড হচ্ছে...</div>
-      </div>
-    );
+    return <AdminLayoutSkeleton />;
   }
 
   return (

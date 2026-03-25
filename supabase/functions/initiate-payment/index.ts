@@ -1,26 +1,26 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
-};
+import { getAppConfig, getPaymentConfig } from "../_shared/config.ts";
+import { createCorsResponse } from "../_shared/cors.ts";
+import { resolveClientBaseUrl } from "../_shared/public-url.ts";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
+    return createCorsResponse(null, { status: 204 }, req);
   }
 
   try {
     const { bookId, customerName, customerEmail, customerPhone, billingAddress, couponCode } = await req.json();
 
     if (!customerName || !customerEmail || !bookId) {
-      return new Response(JSON.stringify({ error: "Missing required fields: bookId, customerName, customerEmail" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return createCorsResponse(JSON.stringify({ error: "Missing required fields: bookId, customerName, customerEmail" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }, req);
     }
 
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const { appBaseUrl, supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // --- SERVER-SIDE PRICE VALIDATION ---
     // Fetch the real book price from the database
@@ -31,11 +31,17 @@ serve(async (req) => {
       .single();
 
     if (bookError || !book) {
-      return new Response(JSON.stringify({ error: "Book not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return createCorsResponse(JSON.stringify({ error: "Book not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      }, req);
     }
 
     if (book.active === false) {
-      return new Response(JSON.stringify({ error: "This book is currently unavailable" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return createCorsResponse(JSON.stringify({ error: "This book is currently unavailable" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      }, req);
     }
 
     let finalAmount = book.price;
@@ -97,18 +103,20 @@ serve(async (req) => {
 
     if (orderError) {
       console.error("Order creation error:", orderError);
-      return new Response(JSON.stringify({ error: "Failed to create order" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return createCorsResponse(JSON.stringify({ error: "Failed to create order" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }, req);
     }
 
     // PayStation credentials from secrets
-    const merchantId = Deno.env.get("PAYSTATION_MERCHANT_ID");
-    const password = Deno.env.get("PAYSTATION_PASSWORD");
+    const {
+      paystationMerchantId: merchantId,
+      paystationPassword: password,
+      paystationInitiatePaymentUrl,
+    } = getPaymentConfig();
 
-    if (!merchantId || !password) {
-      return new Response(JSON.stringify({ error: "Payment gateway not configured." }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    const origin = req.headers.get("origin") || req.headers.get("referer")?.replace(/\/$/, "") || "";
+    const returnToBaseUrl = resolveClientBaseUrl(req, appBaseUrl);
 
     // Generate HMAC signature using PAYSTATION_PASSWORD as key
     const encoder = new TextEncoder();
@@ -123,7 +131,11 @@ serve(async (req) => {
       new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(invoiceNumber)))
     ).map(b => b.toString(16).padStart(2, "0")).join("");
 
-    const callbackUrl = `${supabaseUrl}/functions/v1/payment-webhook?sig=${signature}`;
+    const callbackParams = new URLSearchParams({
+      sig: signature,
+      return_to: returnToBaseUrl,
+    });
+    const callbackUrl = `${supabaseUrl}/functions/v1/payment-webhook?${callbackParams.toString()}`;
 
     // PayStation initiate-payment API
     const formData = new FormData();
@@ -139,9 +151,9 @@ serve(async (req) => {
     formData.append("cust_address", billingAddress || "Bangladesh");
     formData.append("callback_url", callbackUrl);
     formData.append("checkout_items", JSON.stringify({ book: book.title, orderId: order.id }));
-    formData.append("opt_a", origin);
+    formData.append("opt_a", returnToBaseUrl);
 
-    const payRes = await fetch("https://api.paystation.com.bd/initiate-payment", {
+    const payRes = await fetch(paystationInitiatePaymentUrl, {
       method: "POST",
       body: formData,
     });
@@ -150,18 +162,24 @@ serve(async (req) => {
     console.log("PayStation response:", payData);
 
     if (payData.status_code === "200" || payData.status === "success") {
-      return new Response(JSON.stringify({
+      return createCorsResponse(JSON.stringify({
         success: true,
         gatewayUrl: payData.payment_url,
         orderId: order.id,
         invoiceNumber,
-      }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }), { headers: { "Content-Type": "application/json" } }, req);
     } else {
       console.error("PayStation error:", payData);
-      return new Response(JSON.stringify({ error: "Payment gateway error", details: payData.message || "Unknown error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return createCorsResponse(JSON.stringify({ error: "Payment gateway error", details: payData.message || "Unknown error" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }, req);
     }
   } catch (err) {
     console.error("Error:", err);
-    return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    return createCorsResponse(JSON.stringify({ error: err.message }), {
+      status: 500,
+      headers: { "Content-Type": "application/json" },
+    }, req);
   }
 });

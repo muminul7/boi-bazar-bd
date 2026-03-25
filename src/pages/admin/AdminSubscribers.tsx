@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { Mail, Download, Trash2, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 
 interface Subscriber {
   id: string;
@@ -90,7 +91,13 @@ export default function AdminSubscribers() {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={3} className="text-center py-10 text-muted-foreground font-bengali">লোড হচ্ছে...</TableCell></TableRow>
+              Array.from({ length: 5 }).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell><Skeleton className="h-5 w-48" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="ml-auto h-8 w-8 rounded-md" /></TableCell>
+                </TableRow>
+              ))
             ) : subscribers.length === 0 ? (
               <TableRow><TableCell colSpan={3} className="text-center py-10 text-muted-foreground font-bengali">কোনো সাবস্ক্রাইবার নেই</TableCell></TableRow>
             ) : (

@@ -8,6 +8,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import TrackingScripts from "@/components/TrackingScripts";
+import { RouteFallbackSkeleton } from "@/components/loading-skeletons";
 
 // Lazy load non-critical routes
 const Books = lazy(() => import("./pages/Books"));
@@ -32,11 +33,7 @@ const RefundPolicy = lazy(() => import("./pages/RefundPolicy"));
 
 const queryClient = new QueryClient();
 
-const Loading = () => (
-  <div className="min-h-[60vh] flex items-center justify-center">
-    <div className="h-8 w-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-  </div>
-);
+const Loading = () => <RouteFallbackSkeleton />;
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

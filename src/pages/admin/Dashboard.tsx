@@ -1,5 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { AdminDashboardSkeleton } from "@/components/loading-skeletons";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -25,29 +26,46 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [period, setPeriod] = useState<"7d" | "30d" | "90d" | "all">("30d");
 
-  useEffect(() => {
-    const fetchAll = async () => {
-      const [booksRes, ordersRes, couponsRes] = await Promise.all([
-        supabase.from("books").select("id", { count: "exact", head: true }),
-        supabase.from("orders").select("id, amount, discount, payment_status, created_at, customer_name, customer_email, books(title)").order("created_at", { ascending: false }),
-        supabase.from("coupons").select("id", { count: "exact", head: true }),
-      ]);
+  const fetchAll = useCallback(async () => {
+    const [booksRes, ordersRes, couponsRes] = await Promise.all([
+      supabase.from("books").select("id", { count: "exact", head: true }),
+      supabase.from("orders").select("id, amount, discount, payment_status, created_at, customer_name, customer_email, books(title)").order("created_at", { ascending: false }),
+      supabase.from("coupons").select("id", { count: "exact", head: true }),
+    ]);
 
-      const allOrders = (ordersRes.data as any) || [];
-      const paidOrders = allOrders.filter((o: any) => o.payment_status === "paid");
-      const revenue = paidOrders.reduce((sum: number, o: any) => sum + (o.amount || 0), 0);
+    const allOrders = (ordersRes.data as any) || [];
+    const paidOrders = allOrders.filter((o: any) => o.payment_status === "paid");
+    const revenue = paidOrders.reduce((sum: number, o: any) => sum + (o.amount || 0), 0);
 
-      setStats({
-        books: booksRes.count || 0,
-        orders: allOrders.length,
-        revenue,
-        coupons: couponsRes.count || 0,
-      });
-      setOrders(allOrders);
-      setLoading(false);
-    };
-    fetchAll();
+    setStats({
+      books: booksRes.count || 0,
+      orders: allOrders.length,
+      revenue,
+      coupons: couponsRes.count || 0,
+    });
+    setOrders(allOrders);
+    setLoading(false);
   }, []);
+
+  useEffect(() => {
+    fetchAll();
+
+    const channel = supabase
+      .channel("admin-dashboard-orders")
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        fetchAll();
+      })
+      .subscribe();
+
+    const intervalId = window.setInterval(() => {
+      fetchAll();
+    }, 30000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      supabase.removeChannel(channel);
+    };
+  }, [fetchAll]);
 
   const filteredOrders = useMemo(() => {
     if (period === "all") return orders;
@@ -79,7 +97,14 @@ export default function Dashboard() {
     const map = new Map<string, number>();
     filteredOrders.forEach(o => {
       const s = o.payment_status || "unknown";
-      const label = s === "paid" ? "সফল" : s === "pending" ? "পেন্ডিং" : s === "failed" ? "ব্যর্থ" : s === "cancelled" ? "বাতিল" : s;
+      const label =
+        s === "paid" ? "সফল" :
+        s === "pending" ? "পেন্ডিং" :
+        s === "pending_verification" ? "যাচাই চলছে" :
+        s === "failed" ? "ব্যর্থ" :
+        s === "verification_failed" ? "যাচাই ব্যর্থ" :
+        s === "cancelled" ? "বাতিল" :
+        s;
       map.set(label, (map.get(label) || 0) + 1);
     });
     return Array.from(map.entries()).map(([name, value]) => ({ name, value }));
@@ -98,7 +123,7 @@ export default function Dashboard() {
   const recentPaidOrders = useMemo(() => paidOrders.slice(0, 10), [paidOrders]);
 
   if (loading) {
-    return <div className="p-8 text-center text-muted-foreground font-bengali">লোড হচ্ছে...</div>;
+    return <AdminDashboardSkeleton />;
   }
 
   const summaryCards = [

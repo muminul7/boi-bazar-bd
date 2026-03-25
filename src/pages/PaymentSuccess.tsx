@@ -1,19 +1,141 @@
-import { useSearchParams, Link } from "react-router-dom";
-import { CheckCircle, XCircle, AlertTriangle, ArrowRight, Download, Mail, RefreshCw, ShieldCheck, Phone } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams, Link } from "react-router-dom";
+import { CheckCircle, XCircle, AlertTriangle, ArrowRight, Download, Mail, RefreshCw, ShieldCheck, Phone, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
+
+type PaymentPageStatus = "success" | "pending" | "failed" | "cancelled";
+
+function normalizeStatus(status: string | null): PaymentPageStatus {
+  switch (status) {
+    case "success":
+      return "success";
+    case "pending":
+      return "pending";
+    case "failed":
+      return "failed";
+    default:
+      return "cancelled";
+  }
+}
 
 export default function PaymentSuccess() {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const status = searchParams.get("status");
   const orderId = searchParams.get("order_id");
+  const [status, setStatus] = useState<PaymentPageStatus>(normalizeStatus(searchParams.get("status")));
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const isSuccess = status === "success";
-  const isFailed = status === "failed";
+  useEffect(() => {
+    setStatus(normalizeStatus(searchParams.get("status")));
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (status !== "pending" || !orderId) {
+      return;
+    }
+
+    let cancelled = false;
+    let timeoutId: number | undefined;
+    let attempts = 0;
+
+    const pollPaymentStatus = async () => {
+      if (cancelled) {
+        return;
+      }
+
+      setIsRefreshing(true);
+
+      try {
+        const { data, error } = await supabase.functions.invoke("check-payment-status", {
+          body: { orderId },
+        });
+
+        if (cancelled) {
+          return;
+        }
+
+        if (error) {
+          console.error("Payment status check failed:", error);
+        } else if (data?.status && data.status !== "pending") {
+          const nextStatus = normalizeStatus(data.status);
+          setStatus(nextStatus);
+
+          const nextParams = new URLSearchParams(searchParams);
+          nextParams.set("status", nextStatus);
+          navigate(`/payment-success?${nextParams.toString()}`, { replace: true });
+          return;
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error("Payment status polling error:", error);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsRefreshing(false);
+        }
+      }
+
+      attempts += 1;
+      if (!cancelled && attempts < 12) {
+        timeoutId = window.setTimeout(pollPaymentStatus, 5000);
+      }
+    };
+
+    void pollPaymentStatus();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+    };
+  }, [navigate, orderId, searchParams, status]);
+
+  const handleManualRefresh = async () => {
+    if (!orderId || isRefreshing) {
+      return;
+    }
+
+    setIsRefreshing(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("check-payment-status", {
+        body: { orderId },
+      });
+
+      if (error) {
+        console.error("Manual payment status check failed:", error);
+        return;
+      }
+
+      if (data?.status) {
+        const nextStatus = normalizeStatus(data.status);
+        setStatus(nextStatus);
+
+        const nextParams = new URLSearchParams(searchParams);
+        nextParams.set("status", nextStatus);
+        navigate(`/payment-success?${nextParams.toString()}`, { replace: true });
+      }
+    } catch (error) {
+      console.error("Manual payment status polling error:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      {isSuccess ? <SuccessView orderId={orderId} /> : isFailed ? <FailedView /> : <CancelledView />}
+      {status === "success" ? (
+        <SuccessView orderId={orderId} />
+      ) : status === "pending" ? (
+        <PendingView orderId={orderId} isRefreshing={isRefreshing} onRefresh={handleManualRefresh} />
+      ) : status === "failed" ? (
+        <FailedView />
+      ) : (
+        <CancelledView />
+      )}
     </div>
   );
 }
@@ -182,6 +304,99 @@ function FailedView() {
         <Link to="/">
           <Button variant="ghost" className="w-full font-bengali">
             হোম পেজে যান
+          </Button>
+        </Link>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function PendingView({
+  orderId,
+  isRefreshing,
+  onRefresh,
+}: {
+  orderId: string | null;
+  isRefreshing: boolean;
+  onRefresh: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      className="bg-card rounded-3xl shadow-brand-xl border border-border w-full max-w-lg p-10 text-center"
+    >
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+        className="h-20 w-20 rounded-full bg-amber-500/15 flex items-center justify-center mx-auto mb-6"
+      >
+        <LoaderCircle className="h-10 w-10 text-amber-600 animate-spin" />
+      </motion.div>
+
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}>
+        <h1 className="text-3xl font-bold font-bengali text-foreground mb-2">Payment is being verified</h1>
+        <p className="font-bengali text-muted-foreground mb-6 text-lg">
+          PayStation sent a success callback, but the verification API has not confirmed the transaction yet. Your order is not marked failed.
+        </p>
+      </motion.div>
+
+      {orderId && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.45 }}
+          className="bg-amber-500/10 rounded-2xl p-5 mb-6 text-sm font-bengali text-left space-y-2"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-muted-foreground">Order ID</span>
+            <span className="font-body font-semibold text-foreground text-xs">{orderId.slice(0, 8).toUpperCase()}...</span>
+          </div>
+          <p className="text-muted-foreground">
+            We will complete the payment after verification succeeds. If payment was deducted, do not pay again yet.
+          </p>
+        </motion.div>
+      )}
+
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55 }}
+        className="space-y-3 mb-8"
+      >
+        {[
+          { icon: RefreshCw, text: isRefreshing ? "Checking the latest payment status now" : "This page checks PayStation again automatically for a confirmed status" },
+          { icon: Mail, text: "Delivery email will be sent automatically after verification completes" },
+          { icon: Phone, text: "If the status does not change, contact support with your order ID" },
+        ].map((item, i) => (
+          <div key={i} className="flex items-center gap-3 text-left">
+            <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center shrink-0">
+              <item.icon className="h-4 w-4 text-amber-600" />
+            </div>
+            <span className="text-sm font-bengali text-muted-foreground">{item.text}</span>
+          </div>
+        ))}
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.65 }}
+        className="flex flex-col gap-3"
+      >
+        <Button size="lg" className="w-full gap-2 font-bengali rounded-xl py-6" onClick={onRefresh} disabled={isRefreshing}>
+          <RefreshCw className={`h-5 w-5 ${isRefreshing ? "animate-spin" : ""}`} /> {isRefreshing ? "Checking now" : "Check again now"}
+        </Button>
+        <Link to="/contact">
+          <Button variant="outline" size="lg" className="w-full gap-2 font-bengali rounded-xl py-6">
+            <Phone className="h-5 w-5" /> Contact support
+          </Button>
+        </Link>
+        <Link to="/">
+          <Button variant="ghost" className="w-full font-bengali">
+            Go home
           </Button>
         </Link>
       </motion.div>
