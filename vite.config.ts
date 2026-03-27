@@ -26,8 +26,8 @@ async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   return JSON.parse(rawBody);
 }
 
-function attachPaymentRoute(middlewares: Connect.ServerStack) {
-  middlewares.use(async (req, res, next) => {
+function attachPaymentRoute(middlewares: any) {
+  middlewares.use(async (req: any, res: any, next: any) => {
     if (!req.url?.startsWith("/api/initiate-payment")) {
       next();
       return;
