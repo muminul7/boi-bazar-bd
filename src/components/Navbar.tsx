@@ -32,14 +32,14 @@ export default function Navbar() {
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2.5 group">
           {logoUrl ? (
-            <img src={logoUrl} alt="Boi Bazar" className="h-9 w-9 rounded-xl object-contain" />
+            <img src={logoUrl} alt="eboi" className="h-9 w-9 rounded-xl object-contain" />
           ) : (
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary group-hover:bg-primary-light transition-colors">
               <BookOpen className="h-5 w-5 text-primary-foreground" />
             </div>
           )}
           <div className="flex flex-col leading-none">
-            <span className="text-lg font-bold text-foreground font-bengali tracking-tight">Boi Bazar</span>
+            <span className="text-lg font-bold text-foreground font-bengali tracking-tight">eboi</span>
             <span className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">Book Store</span>
           </div>
         </Link>

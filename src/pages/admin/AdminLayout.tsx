@@ -18,7 +18,7 @@ export default function AdminLayout() {
         <div className="flex-1 flex flex-col">
           <header className="h-14 flex items-center border-b border-border bg-card px-4">
             <SidebarTrigger className="mr-3" />
-            <span className="font-bengali font-semibold text-foreground">Boi Bazar অ্যাডমিন প্যানেল</span>
+            <span className="font-bengali font-semibold text-foreground">eboi অ্যাডমিন প্যানেল</span>
           </header>
           <main className="flex-1 p-6 bg-background overflow-auto">
             <Outlet />
