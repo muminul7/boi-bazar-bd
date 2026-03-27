@@ -27,7 +27,7 @@ const defaultSettings: SettingsMap = {
   facebook_pixel_id: "",
   google_analytics_id: "",
   custom_head_code: "",
-  site_name: "eboi",
+  site_name: "eBoi",
   site_description: "",
   contact_email: "",
   contact_phone: "",
