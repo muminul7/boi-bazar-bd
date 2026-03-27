@@ -17,7 +17,7 @@ export default function Footer() {
 
   const logoUrl = settings.site_logo_url;
   const contactEmail = settings.contact_email || "info@eboi.shop";
-  const contactPhone = settings.contact_phone || "+8801841212570";
+  const contactPhone = settings.contact_phone || "+8801601212570";
 
   const socialLinks = [
     { Icon: Facebook, url: settings.facebook_url },
