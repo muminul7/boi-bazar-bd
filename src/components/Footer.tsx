@@ -16,7 +16,7 @@ export default function Footer() {
   }, []);
 
   const logoUrl = settings.site_logo_url;
-  const contactEmail = settings.contact_email || "support@boibazar.com";
+  const contactEmail = settings.contact_email || "info@eboi.shop";
   const contactPhone = settings.contact_phone || "+৮৮০ ১৭০০-০০০০০০";
 
   const socialLinks = [
@@ -33,14 +33,14 @@ export default function Footer() {
           <div className="md:col-span-2">
             <Link to="/" className="inline-flex items-center gap-2.5 mb-4">
               {logoUrl ? (
-                <img src={logoUrl} alt="Boi Bazar" className="h-9 w-9 rounded-xl object-contain" />
+                <img src={logoUrl} alt="eBoi" className="h-9 w-9 rounded-xl object-contain" />
               ) : (
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary">
                   <BookOpen className="h-5 w-5 text-primary-foreground" />
                 </div>
               )}
               <div>
-                <div className="text-lg font-bold font-bengali">Boi Bazar</div>
+                <div className="text-lg font-bold font-bengali">eBoi</div>
                 <div className="text-[10px] text-muted-foreground font-body tracking-wider uppercase">Book Store</div>
               </div>
             </Link>
@@ -110,7 +110,7 @@ export default function Footer() {
 
         {/* Bottom bar */}
         <div className="border-t pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs" style={{ borderColor: "hsl(0, 0%, 100%, 0.1)", color: "hsl(210, 15%, 50%)" }}>
-          <p className="font-bengali">© ২০২৫ Boi Bazar। সর্বস্বত্ব সংরক্ষিত।</p>
+          <p className="font-bengali">© ২০২৫ eBoi। সর্বস্বত্ব সংরক্ষিত।</p>
           <div className="flex gap-4 font-bengali">
             <Link to="/privacy" className="hover:text-gold transition-colors">গোপনীয়তা নীতি</Link>
             <Link to="/terms" className="hover:text-gold transition-colors">শর্তাবলী</Link>

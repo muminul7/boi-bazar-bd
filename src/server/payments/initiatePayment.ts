@@ -142,7 +142,7 @@ export default async function initiatePaymentHandler(req: PaymentRequest, res: P
     const supabaseServiceRoleKey = getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY");
     const merchantId = getRequiredEnv("PAYSTATION_MERCHANT_ID");
     const password = getRequiredEnv("PAYSTATION_PASSWORD");
-    const appBaseUrl = process.env.APP_BASE_URL || "https://boi-bazar-bd.lovable.app";
+    const appBaseUrl = process.env.APP_BASE_URL || "https://eboi.shop";
     const paystationApiBaseUrl = trimTrailingSlash(
       process.env.PAYSTATION_API_BASE_URL || "https://api.paystation.com.bd",
     );

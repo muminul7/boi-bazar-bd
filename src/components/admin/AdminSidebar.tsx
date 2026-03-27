@@ -47,7 +47,7 @@ export function AdminSidebar() {
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary shrink-0">
               <BookOpen className="h-4 w-4 text-sidebar-primary-foreground" />
             </div>
-            {!collapsed && <span className="font-bengali font-bold text-sidebar-foreground">Boi Bazar অ্যাডমিন</span>}
+            {!collapsed && <span className="font-bengali font-bold text-sidebar-foreground">eBoi অ্যাডমিন</span>}
           </div>
         </div>
 

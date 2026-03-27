@@ -27,7 +27,7 @@ const defaultSettings: SettingsMap = {
   facebook_pixel_id: "",
   google_analytics_id: "",
   custom_head_code: "",
-  site_name: "Boi Bazar",
+  site_name: "eBoi",
   site_description: "",
   contact_email: "",
   contact_phone: "",
@@ -217,7 +217,7 @@ export default function AdminSettings() {
           </div>
           <div className="space-y-2">
             <Label className="font-bengali">যোগাযোগ ইমেইল</Label>
-            <Input type="email" value={settings.contact_email} onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })} placeholder="info@boibazar.com" />
+            <Input type="email" value={settings.contact_email} onChange={(e) => setSettings({ ...settings, contact_email: e.target.value })} placeholder="info@eboi.shop" />
           </div>
           <div className="space-y-2">
             <Label className="font-bengali">ফোন নম্বর</Label>
