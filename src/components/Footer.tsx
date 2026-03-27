@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { BookOpen, Mail, Phone, MapPin, Facebook, Youtube, Instagram } from "lucide-react";
+import { BookOpen, Mail, Phone, Facebook, Youtube, Instagram } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 export default function Footer() {
@@ -16,8 +16,8 @@ export default function Footer() {
   }, []);
 
   const logoUrl = settings.site_logo_url;
-  const contactEmail = settings.contact_email || "support@boibazar.com";
-  const contactPhone = settings.contact_phone || "+৮৮০ ১৭০০-০০০০০০";
+  const contactEmail = settings.contact_email || "info@eboi.shop";
+  const contactPhone = settings.contact_phone || "০১৬০১২১২৫৭০";
 
   const socialLinks = [
     { Icon: Facebook, url: settings.facebook_url },
@@ -99,10 +99,6 @@ export default function Footer() {
               <li className="flex items-start gap-2.5 text-sm" style={{ color: "hsl(210, 20%, 65%)" }}>
                 <Phone className="h-4 w-4 mt-0.5 shrink-0 text-gold" />
                 <span className="font-bengali">{contactPhone}</span>
-              </li>
-              <li className="flex items-start gap-2.5 text-sm" style={{ color: "hsl(210, 20%, 65%)" }}>
-                <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-gold" />
-                <span className="font-bengali">ঢাকা, বাংলাদেশ</span>
               </li>
             </ul>
           </div>

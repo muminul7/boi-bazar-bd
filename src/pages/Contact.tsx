@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Mail, Phone, MapPin, Send, MessageCircle, Loader2 } from "lucide-react";
+import { Mail, Phone, Send, MessageCircle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,9 +47,8 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-10">
           <div className="lg:col-span-2 space-y-5">
             {[
-              { icon: Mail, title: "ইমেইল", value: "support@ekitab.com.bd" },
-              { icon: Phone, title: "ফোন", value: "+৮৮০ ১৭০০-০০০০০০" },
-              { icon: MapPin, title: "ঠিকানা", value: "ঢাকা, বাংলাদেশ" },
+              { icon: Mail, title: "ইমেইল", value: "info@eboi.shop" },
+              { icon: Phone, title: "ফোন", value: "০১৬০১২১২৫৭০" },
               { icon: MessageCircle, title: "সাপোর্ট সময়", value: "সকাল ৯টা – রাত ৯টা" },
             ].map((item, i) => (
               <div key={i} className="bg-card rounded-2xl border border-border p-5 shadow-brand-sm flex items-start gap-4">
