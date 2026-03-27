@@ -48,7 +48,7 @@ export default function ContactPage() {
           <div className="lg:col-span-2 space-y-5">
             {[
               { icon: Mail, title: "ইমেইল", value: "info@eboi.shop" },
-              { icon: Phone, title: "ফোন", value: "০১৬০১২১২৫৭০" },
+              { icon: Phone, title: "ফোন", value: "+8801841212570" },
               { icon: MessageCircle, title: "সাপোর্ট সময়", value: "সকাল ৯টা – রাত ৯টা" },
             ].map((item, i) => (
               <div key={i} className="bg-card rounded-2xl border border-border p-5 shadow-brand-sm flex items-start gap-4">
