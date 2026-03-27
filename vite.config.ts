@@ -1,5 +1,5 @@
 import { IncomingMessage, ServerResponse } from "node:http";
-import { defineConfig, loadEnv, type Connect, type Plugin } from "vite";
+import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
@@ -26,8 +26,8 @@ async function readJsonBody(req: IncomingMessage): Promise<unknown> {
   return JSON.parse(rawBody);
 }
 
-function attachPaymentRoute(middlewares: Connect.ServerStack) {
-  middlewares.use(async (req, res, next) => {
+function attachPaymentRoute(middlewares: any) {
+  middlewares.use(async (req: any, res: any, next: any) => {
     if (!req.url?.startsWith("/api/initiate-payment")) {
       next();
       return;
