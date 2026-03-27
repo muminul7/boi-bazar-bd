@@ -17,7 +17,7 @@ function trimTrailingSlash(value: string): string {
 
 export function getAppConfig() {
   return {
-    appBaseUrl: getEnv("APP_BASE_URL", "https://boi-bazar-bd.lovable.app"),
+    appBaseUrl: getEnv("APP_BASE_URL", "https://eboi.shop"),
     supabaseUrl: requireEnv("SUPABASE_URL"),
     supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
   };

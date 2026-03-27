@@ -10,7 +10,7 @@ export default function Terms() {
         <div className="bg-card rounded-2xl border border-border p-8 shadow-brand-sm space-y-6 font-bengali text-foreground leading-relaxed">
           <section>
             <h2 className="text-xl font-bold mb-3">সাধারণ শর্তাবলী</h2>
-            <p className="text-muted-foreground">Boi Bazar ওয়েবসাইট ব্যবহার করে আপনি এই শর্তাবলীতে সম্মত হচ্ছেন। আমরা যেকোনো সময় এই শর্তাবলী পরিবর্তন করার অধিকার রাখি।</p>
+            <p className="text-muted-foreground">eboi ওয়েবসাইট ব্যবহার করে আপনি এই শর্তাবলীতে সম্মত হচ্ছেন। আমরা যেকোনো সময় এই শর্তাবলী পরিবর্তন করার অধিকার রাখি।</p>
           </section>
           <section>
             <h2 className="text-xl font-bold mb-3">পণ্য ও সেবা</h2>
