@@ -2,21 +2,38 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const DEFAULT_FAVICON = "/favicon.ico";
-const FAVICON_LINK_ID = "app-favicon";
+const FAVICON_LINKS = [
+  { id: "app-favicon", rel: "icon" },
+  { id: "app-shortcut-favicon", rel: "shortcut icon" },
+];
 
-type SiteLogoUpdatedEvent = CustomEvent<{ logoUrl?: string }>;
-
-function updateFavicon(href: string) {
-  let link = document.getElementById(FAVICON_LINK_ID) as HTMLLinkElement | null;
-
-  if (!link) {
-    link = document.createElement("link");
-    link.id = FAVICON_LINK_ID;
-    link.rel = "icon";
-    document.head.appendChild(link);
+function getVersionedFaviconUrl(href: string, updatedAt?: string) {
+  if (!updatedAt || href === DEFAULT_FAVICON) {
+    return href;
   }
 
-  link.href = href;
+  try {
+    const url = new URL(href, window.location.origin);
+    url.searchParams.set("v", updatedAt);
+    return url.toString();
+  } catch {
+    return href;
+  }
+}
+
+function updateFavicon(href: string) {
+  FAVICON_LINKS.forEach(({ id, rel }) => {
+    let link = document.getElementById(id) as HTMLLinkElement | null;
+
+    if (!link) {
+      link = document.createElement("link");
+      link.id = id;
+      link.rel = rel;
+      document.head.appendChild(link);
+    }
+
+    link.href = href;
+  });
 }
 
 export default function SiteFavicon() {
@@ -27,24 +44,16 @@ export default function SiteFavicon() {
 
     supabase
       .from("site_settings")
-      .select("value")
+      .select("value, updated_at")
       .eq("key", "site_logo_url")
       .maybeSingle()
       .then(({ data }) => {
         if (!isMounted) return;
-        setFaviconUrl(data?.value || DEFAULT_FAVICON);
+        setFaviconUrl(getVersionedFaviconUrl(data?.value || DEFAULT_FAVICON, data?.updated_at));
       });
-
-    const handleSiteLogoUpdated = (event: Event) => {
-      const { detail } = event as SiteLogoUpdatedEvent;
-      setFaviconUrl(detail?.logoUrl || DEFAULT_FAVICON);
-    };
-
-    window.addEventListener("site-logo-updated", handleSiteLogoUpdated);
 
     return () => {
       isMounted = false;
-      window.removeEventListener("site-logo-updated", handleSiteLogoUpdated);
     };
   }, []);
 
