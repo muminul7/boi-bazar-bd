@@ -9,6 +9,7 @@ import Footer from "@/components/Footer";
 import Index from "./pages/Index";
 import TrackingScripts from "@/components/TrackingScripts";
 import { RouteFallbackSkeleton } from "@/components/loading-skeletons";
+import SiteFavicon from "@/components/SiteFavicon";
 
 // Lazy load non-critical routes
 const Books = lazy(() => import("./pages/Books"));
@@ -41,6 +42,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <TrackingScripts />
+      <SiteFavicon />
       <BrowserRouter>
         <Suspense fallback={<Loading />}>
           <Routes>
