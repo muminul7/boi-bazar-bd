@@ -116,6 +116,46 @@ async function readPaystationResponse(response: Response) {
   }
 }
 
+async function incrementCouponUsage(supabase: ReturnType<typeof createClient>, couponCode: string | null | undefined) {
+  if (!couponCode) {
+    return;
+  }
+
+  const { data: coupon } = await supabase
+    .from("coupons")
+    .select("used_count")
+    .eq("code", couponCode)
+    .single();
+
+  if (coupon) {
+    await supabase
+      .from("coupons")
+      .update({ used_count: (coupon.used_count || 0) + 1 })
+      .eq("code", couponCode);
+  }
+}
+
+async function sendDeliveryEmail(
+  supabaseUrl: string,
+  supabaseServiceRoleKey: string,
+  orderId: string,
+) {
+  try {
+    const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-delivery-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+      },
+      body: JSON.stringify({ orderId }),
+    });
+    const emailData = await emailRes.json();
+    console.log("Delivery email result:", emailData);
+  } catch (emailError) {
+    console.error("Delivery email error:", emailError);
+  }
+}
+
 export default async function initiatePaymentHandler(req: PaymentRequest, res: PaymentResponse) {
   if (req.method === "OPTIONS") {
     res.setHeader("Allow", "POST, OPTIONS");
@@ -140,13 +180,6 @@ export default async function initiatePaymentHandler(req: PaymentRequest, res: P
 
     const supabaseUrl = getRequiredEnv("SUPABASE_URL");
     const supabaseServiceRoleKey = getRequiredEnv("SUPABASE_SERVICE_ROLE_KEY");
-    const merchantId = getRequiredEnv("PAYSTATION_MERCHANT_ID");
-    const password = getRequiredEnv("PAYSTATION_PASSWORD");
-    const appBaseUrl = process.env.APP_BASE_URL || "https://eboi.shop";
-    const paystationApiBaseUrl = trimTrailingSlash(
-      process.env.PAYSTATION_API_BASE_URL || "https://api.paystation.com.bd",
-    );
-
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     const { data: book, error: bookError } = await supabase
@@ -192,9 +225,8 @@ export default async function initiatePaymentHandler(req: PaymentRequest, res: P
       }
     }
 
-    if (finalAmount < 1) {
-      finalAmount = 1;
-    }
+    finalAmount = Math.max(finalAmount, 0);
+    const isFreeOrder = finalAmount === 0;
 
     const downloadToken = randomUUID();
     const downloadExpiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString();
@@ -211,7 +243,8 @@ export default async function initiatePaymentHandler(req: PaymentRequest, res: P
         coupon_code: couponCode || null,
         amount: finalAmount,
         discount: appliedDiscount,
-        payment_status: "pending",
+        payment_method: isFreeOrder ? "Free" : null,
+        payment_status: isFreeOrder ? "paid" : "pending",
         download_token: downloadToken,
         download_expires_at: downloadExpiresAt,
         transaction_id: invoiceNumber,
@@ -225,6 +258,25 @@ export default async function initiatePaymentHandler(req: PaymentRequest, res: P
       return;
     }
 
+    if (isFreeOrder) {
+      await incrementCouponUsage(supabase, order.coupon_code);
+      await sendDeliveryEmail(supabaseUrl, supabaseServiceRoleKey, order.id);
+
+      json(res, 200, {
+        success: true,
+        orderId: order.id,
+        invoiceNumber,
+        status: "success",
+      });
+      return;
+    }
+
+    const merchantId = getRequiredEnv("PAYSTATION_MERCHANT_ID");
+    const password = getRequiredEnv("PAYSTATION_PASSWORD");
+    const appBaseUrl = process.env.APP_BASE_URL || "https://eboi.shop";
+    const paystationApiBaseUrl = trimTrailingSlash(
+      process.env.PAYSTATION_API_BASE_URL || "https://api.paystation.com.bd",
+    );
     const returnToBaseUrl = resolveClientBaseUrl(req, appBaseUrl);
     const signature = createHmac("sha256", password).update(invoiceNumber).digest("hex");
     const callbackParams = new URLSearchParams({

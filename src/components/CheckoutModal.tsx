@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Book } from "@/data/books";
 import { useToast } from "@/hooks/useToast";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 interface CheckoutModalProps {
   open: boolean;
@@ -24,6 +25,8 @@ type PaymentPayload = {
 };
 type PaymentInitResponse = {
   gatewayUrl?: string;
+  orderId?: string;
+  status?: "success" | "pending" | "failed" | "cancelled";
   error?: string;
   details?: string;
 };
@@ -65,6 +68,7 @@ async function startPayment(body: PaymentPayload): Promise<PaymentInitResponse> 
 }
 
 export default function CheckoutModal({ open, onClose, book }: CheckoutModalProps) {
+  const navigate = useNavigate();
   const { toast } = useToast();
   const [step, setStep] = useState<"form" | "payment">("form");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("paystation");
@@ -78,6 +82,7 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
 
   const discount = couponDiscount;
   const total = Math.max(book.price - discount, 0);
+  const requiresPayment = total > 0;
 
   const handleApplyCoupon = async () => {
     if (!coupon.trim()) return;
@@ -100,13 +105,18 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
     toast({ title: "কুপন প্রয়োগ হয়েছে!", description: `৳${result.discount} ছাড় পেয়েছেন।` });
   };
 
-  const handleFormSubmit = (e: React.FormEvent) => {
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name || !form.email || !form.phone) {
       toast({ title: "তথ্য পূরণ করুন", description: "নাম, ইমেইল ও ফোন নম্বর আবশ্যক।", variant: "destructive" });
       return;
     }
-    setStep("payment");
+    if (requiresPayment) {
+      setStep("payment");
+      return;
+    }
+
+    await handlePayment();
   };
 
   const handlePayment = async () => {
@@ -124,6 +134,9 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
       if (data?.gatewayUrl) {
         // Redirect to PayStation payment page
         window.location.href = data.gatewayUrl;
+      } else if (data?.orderId) {
+        onClose();
+        navigate(`/payment-success?status=${data.status || "success"}&order_id=${data.orderId}`);
       } else {
         throw new Error(data?.error || "Payment gateway error");
       }
@@ -222,7 +235,7 @@ export default function CheckoutModal({ open, onClose, book }: CheckoutModalProp
           )}
 
           {/* ── Step 2: Payment Method ── */}
-          {step === "payment" && (
+          {requiresPayment && step === "payment" && (
             <div className="space-y-4">
               <p className="font-bengali text-sm text-muted-foreground">পেমেন্ট পদ্ধতি বেছে নিন:</p>
               <div className="space-y-2.5">

@@ -4,6 +4,46 @@ import { getAppConfig, getPaymentConfig } from "../_shared/config.ts";
 import { createCorsResponse } from "../_shared/cors.ts";
 import { resolveClientBaseUrl } from "../_shared/public-url.ts";
 
+async function incrementCouponUsage(supabase: ReturnType<typeof createClient>, couponCode: string | null | undefined) {
+  if (!couponCode) {
+    return;
+  }
+
+  const { data: coupon } = await supabase
+    .from("coupons")
+    .select("used_count")
+    .eq("code", couponCode)
+    .single();
+
+  if (coupon) {
+    await supabase
+      .from("coupons")
+      .update({ used_count: (coupon.used_count || 0) + 1 })
+      .eq("code", couponCode);
+  }
+}
+
+async function sendDeliveryEmail(
+  supabaseUrl: string,
+  supabaseServiceRoleKey: string,
+  orderId: string,
+) {
+  try {
+    const emailRes = await fetch(`${supabaseUrl}/functions/v1/send-delivery-email`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${supabaseServiceRoleKey}`,
+      },
+      body: JSON.stringify({ orderId }),
+    });
+    const emailData = await emailRes.json();
+    console.log("Delivery email result:", emailData);
+  } catch (emailError) {
+    console.error("Delivery email error:", emailError);
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return createCorsResponse(null, { status: 204 }, req);
@@ -76,10 +116,8 @@ serve(async (req) => {
       // If coupon is invalid, we proceed without discount (no error, just ignore)
     }
 
-    // Ensure minimum amount of 1 BDT
-    if (finalAmount < 1) {
-      finalAmount = 1;
-    }
+    finalAmount = Math.max(finalAmount, 0);
+    const isFreeOrder = finalAmount === 0;
 
     // Create order in DB with server-computed amount
     const downloadToken = crypto.randomUUID();
@@ -95,7 +133,8 @@ serve(async (req) => {
       coupon_code: couponCode || null,
       amount: finalAmount,
       discount: appliedDiscount,
-      payment_status: "pending",
+      payment_method: isFreeOrder ? "Free" : null,
+      payment_status: isFreeOrder ? "paid" : "pending",
       download_token: downloadToken,
       download_expires_at: downloadExpiresAt,
       transaction_id: invoiceNumber,
@@ -107,6 +146,18 @@ serve(async (req) => {
         status: 500,
         headers: { "Content-Type": "application/json" },
       }, req);
+    }
+
+    if (isFreeOrder) {
+      await incrementCouponUsage(supabase, order.coupon_code);
+      await sendDeliveryEmail(supabaseUrl, supabaseServiceRoleKey, order.id);
+
+      return createCorsResponse(JSON.stringify({
+        success: true,
+        orderId: order.id,
+        invoiceNumber,
+        status: "success",
+      }), { headers: { "Content-Type": "application/json" } }, req);
     }
 
     // PayStation credentials from secrets

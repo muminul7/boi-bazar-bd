@@ -27,6 +27,50 @@ type Book = Tables<"books">;
 
 interface ChapterItem { title: string; topics: string[] }
 interface FaqItem { question: string; answer: string }
+interface BookFormState {
+  title: string;
+  subtitle: string;
+  slug: string;
+  author: string;
+  price: string;
+  original_price: string;
+  category: string;
+  description: string;
+  short_description: string;
+  featured: boolean;
+  best_seller: boolean;
+  new_release: boolean;
+  pages: string;
+  active: boolean;
+  cover_url: string;
+  file_url: string;
+  language: string;
+  format: string;
+  published_date: string;
+  tags: string[];
+  outcomes: string[];
+  suitable_for: string[];
+  chapters: ChapterItem[];
+  faq: FaqItem[];
+}
+
+const toInputNumber = (value: number | null | undefined) => value == null ? "" : String(value);
+
+const parseOptionalNumber = (value: string) => {
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+};
+
+const createEmptyForm = (): BookFormState => ({
+  title: "", subtitle: "", slug: "", author: "", price: "", original_price: "",
+  category: "", description: "", short_description: "", featured: false,
+  best_seller: false, new_release: false, pages: "", active: true,
+  cover_url: "", file_url: "", language: "বাংলা", format: "PDF",
+  published_date: "", tags: [], outcomes: [], suitable_for: [], chapters: [], faq: [],
+});
 
 export default function AdminBooks() {
   const [books, setBooks] = useState<Book[]>([]);
@@ -39,14 +83,7 @@ export default function AdminBooks() {
   const [bookPendingDelete, setBookPendingDelete] = useState<Book | null>(null);
   const { toast } = useToast();
 
-  const [form, setForm] = useState({
-    title: "", subtitle: "", slug: "", author: "", price: 0, original_price: 0,
-    category: "", description: "", short_description: "", featured: false,
-    best_seller: false, new_release: false, pages: 0, active: true,
-    cover_url: "", file_url: "", language: "বাংলা", format: "PDF",
-    published_date: "", tags: [] as string[], outcomes: [] as string[],
-    suitable_for: [] as string[], chapters: [] as ChapterItem[], faq: [] as FaqItem[],
-  });
+  const [form, setForm] = useState<BookFormState>(createEmptyForm());
 
   const [tagInput, setTagInput] = useState("");
   const [outcomeInput, setOutcomeInput] = useState("");
@@ -68,13 +105,7 @@ export default function AdminBooks() {
   useEffect(() => { fetchBooks(); }, []);
 
   const resetForm = () => {
-    setForm({
-      title: "", subtitle: "", slug: "", author: "", price: 0, original_price: 0,
-      category: "", description: "", short_description: "", featured: false,
-      best_seller: false, new_release: false, pages: 0, active: true,
-      cover_url: "", file_url: "", language: "বাংলা", format: "PDF",
-      published_date: "", tags: [], outcomes: [], suitable_for: [], chapters: [], faq: [],
-    });
+    setForm(createEmptyForm());
     setEditingBook(null);
     setTagInput(""); setOutcomeInput(""); setSuitableInput("");
   };
@@ -83,11 +114,11 @@ export default function AdminBooks() {
     setEditingBook(book);
     setForm({
       title: book.title, subtitle: book.subtitle || "", slug: book.slug,
-      author: book.author, price: book.price, original_price: book.original_price || 0,
+      author: book.author, price: toInputNumber(book.price), original_price: toInputNumber(book.original_price),
       category: book.category || "", description: book.description || "",
       short_description: book.short_description || "", featured: book.featured || false,
       best_seller: book.best_seller || false, new_release: book.new_release || false,
-      pages: book.pages || 0, active: book.active !== false,
+      pages: toInputNumber(book.pages), active: book.active !== false,
       cover_url: book.cover_url || "", file_url: bookFiles[book.id] || "",
       language: book.language || "বাংলা", format: book.format || "PDF",
       published_date: book.published_date || "", tags: book.tags || [],
@@ -137,9 +168,29 @@ export default function AdminBooks() {
 
   const handleSave = async () => {
     try {
-      const { file_url, tags, outcomes, suitable_for, chapters, faq, ...rest } = form;
+      const price = parseOptionalNumber(form.price);
+      const originalPrice = parseOptionalNumber(form.original_price);
+      const pages = parseOptionalNumber(form.pages);
+
+      if (price === null || price < 0) {
+        toast({ title: "ত্রুটি", description: "মূল্য সঠিকভাবে দিন।", variant: "destructive" });
+        return;
+      }
+
+      if ((originalPrice !== null && originalPrice < 0) || (pages !== null && pages < 0)) {
+        toast({ title: "ত্রুটি", description: "সংখ্যাগুলো ০ বা তার বেশি হতে হবে।", variant: "destructive" });
+        return;
+      }
+
+      const {
+        file_url, tags, outcomes, suitable_for, chapters, faq,
+        price: _price, original_price: _originalPrice, pages: _pages, ...rest
+      } = form;
       const bookPayload = {
         ...rest,
+        price,
+        original_price: originalPrice,
+        pages,
         tags, outcomes, suitable_for,
         chapters: chapters as any,
         faq: faq as any,
@@ -284,15 +335,15 @@ export default function AdminBooks() {
                   </div>
                   <div className="space-y-2">
                     <Label className="font-bengali">মূল্য (৳) *</Label>
-                    <Input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+                    <Input type="number" min="0" step="any" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label className="font-bengali">আসল মূল্য (৳)</Label>
-                    <Input type="number" value={form.original_price} onChange={(e) => setForm({ ...form, original_price: Number(e.target.value) })} />
+                    <Input type="number" min="0" step="any" value={form.original_price} onChange={(e) => setForm({ ...form, original_price: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label className="font-bengali">পৃষ্ঠা সংখ্যা</Label>
-                    <Input type="number" value={form.pages} onChange={(e) => setForm({ ...form, pages: Number(e.target.value) })} />
+                    <Input type="number" min="0" step="1" value={form.pages} onChange={(e) => setForm({ ...form, pages: e.target.value })} />
                   </div>
                   <div className="space-y-2">
                     <Label className="font-bengali">ভাষা</Label>
@@ -403,7 +454,7 @@ export default function AdminBooks() {
                   <Label className="font-bengali flex items-center gap-2"><Image className="h-4 w-4" /> কভার ইমেজ</Label>
                   <div className="flex items-center gap-3">
                     <label className="flex-1">
-                      <div className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${form.cover_url ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                      <div className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${form.cover_url ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}>
                         {coverUploading ? (
                           <><Loader2 className="h-4 w-4 animate-spin text-primary" /><span className="text-sm font-bengali text-muted-foreground">আপলোড হচ্ছে...</span></>
                         ) : form.cover_url ? (
@@ -422,11 +473,11 @@ export default function AdminBooks() {
                 <div className="space-y-2">
                   <Label className="font-bengali flex items-center gap-2"><FileText className="h-4 w-4" /> ই-বুক ফাইল (PDF)</Label>
                   <label>
-                    <div className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${form.file_url ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'}`}>
+                    <div className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 border-dashed cursor-pointer transition-colors ${form.file_url ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"}`}>
                       {ebookUploading ? (
                         <><Loader2 className="h-4 w-4 animate-spin text-primary" /><span className="text-sm font-bengali text-muted-foreground">আপলোড হচ্ছে...</span></>
                       ) : form.file_url ? (
-                        <><CheckCircle className="h-4 w-4 text-primary" /><span className="text-sm font-bengali text-primary">ফাইল আপলোড হয়েছে — {form.file_url.split("/").pop()}</span></>
+                        <><CheckCircle className="h-4 w-4 text-primary" /><span className="text-sm font-bengali text-primary">ফাইল আপলোড হয়েছে - {form.file_url.split("/").pop()}</span></>
                       ) : (
                         <><Upload className="h-4 w-4 text-muted-foreground" /><span className="text-sm font-bengali text-muted-foreground">PDF ফাইল বেছে নিন</span></>
                       )}
