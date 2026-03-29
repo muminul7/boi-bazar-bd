@@ -321,7 +321,7 @@ export default function HomePage() {
       <section id="benefits" className="section-py bg-background">
         <div className="container mx-auto">
           <motion.div initial="hidden" whileInView="visible" viewport={{ once: true }} variants={stagger} className="text-center mb-12">
-            <motion.p variants={fadeUp} className="text-sm font-semibold text-primary font-bengali mb-2">কেন Boi Bazar?</motion.p>
+            <motion.p variants={fadeUp} className="text-sm font-semibold text-primary font-bengali mb-2">কেন eBoi?</motion.p>
             <motion.h2 variants={fadeUp} custom={1} className="text-3xl lg:text-4xl font-bold font-bengali text-foreground mb-4">আমাদের সুবিধাসমূহ</motion.h2>
           </motion.div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
