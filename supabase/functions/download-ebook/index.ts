@@ -108,10 +108,10 @@ serve(async (req) => {
 });
 
 function errorPage(message: string): string {
-  const { appBaseUrl } = getAppConfig();
+  const { appBaseUrl, appName } = getAppConfig();
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ডাউনলোড - বই বাজার</title></head>
+<title>ডাউনলোড - ${appName}</title></head>
 <body style="margin:0;padding:0;background:#f4f7fa;font-family:'Segoe UI',Arial,sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;">
 <div style="max-width:420px;background:#fff;border-radius:16px;padding:40px 32px;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
   <div style="font-size:48px;margin-bottom:16px;">😔</div>

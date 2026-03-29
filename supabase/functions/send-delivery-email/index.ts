@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import nodemailer from "npm:nodemailer@6.9.16";
 import { getAppConfig, getEmailConfig } from "../_shared/config.ts";
 import { createCorsResponse } from "../_shared/cors.ts";
 
@@ -18,8 +19,16 @@ serve(async (req) => {
       });
     }
 
-    const { supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
-    const { resendApiKey, resendFromEmail } = getEmailConfig();
+    const { appBaseUrl, appName, supabaseUrl, supabaseServiceRoleKey } = getAppConfig();
+    const {
+      smtpHost,
+      smtpPort,
+      smtpUser,
+      smtpPass,
+      smtpSecure,
+      mailFromName,
+      mailFromAddress,
+    } = getEmailConfig();
     const supabase = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // Fetch order with book details
@@ -50,6 +59,7 @@ serve(async (req) => {
     const bookAuthor = order.books?.author || "";
     const bookCover = order.books?.cover_url || "";
     const customerName = order.customer_name;
+    const siteDomain = appBaseUrl.replace(/^https?:\/\//, "").replace(/\/+$/, "");
 
     // HTML email template
     const emailHtml = `
@@ -64,7 +74,7 @@ serve(async (req) => {
     
     <!-- Header -->
     <div style="background:linear-gradient(135deg,#0d9488,#0f766e);padding:32px 24px;text-align:center;">
-      <h1 style="margin:0;color:#ffffff;font-size:24px;">📚 বই বাজার</h1>
+      <h1 style="margin:0;color:#ffffff;font-size:24px;">📚 ${appName}</h1>
       <p style="margin:8px 0 0;color:#ccfbf1;font-size:14px;">আপনার ই-বুক রেডি!</p>
     </div>
 
@@ -113,43 +123,46 @@ serve(async (req) => {
       <p style="margin:0;color:#94a3b8;font-size:12px;">
         কোনো সমস্যা হলে আমাদের সাথে যোগাযোগ করুন
       </p>
+      <p style="margin:8px 0 0;color:#64748b;font-size:12px;">
+        <a href="${appBaseUrl}" style="color:#0f766e;text-decoration:none;font-weight:600;">${siteDomain}</a>
+      </p>
     </div>
   </div>
 </body>
 </html>`;
 
-    // Send email via Resend
-    const emailRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${resendApiKey}`,
-        "Content-Type": "application/json",
+    const transporter = nodemailer.createTransport({
+      host: smtpHost,
+      port: smtpPort,
+      secure: smtpSecure,
+      auth: {
+        user: smtpUser,
+        pass: smtpPass,
       },
-      body: JSON.stringify({
-        from: `বই বাজার <${resendFromEmail}>`,
-        to: [order.customer_email],
-        subject: `📚 "${bookTitle}" — আপনার ই-বুক ডাউনলোড করুন`,
-        html: emailHtml,
-      }),
     });
 
-    const emailData = await emailRes.json();
-    console.log("Resend response:", emailData);
+    const emailInfo = await transporter.sendMail({
+      from: {
+        name: mailFromName || appName,
+        address: mailFromAddress,
+      },
+      to: order.customer_email,
+      subject: `📚 "${bookTitle}" — আপনার ই-বুক ডাউনলোড করুন`,
+      html: emailHtml,
+    });
+    console.log("SMTP response:", emailInfo);
 
-    if (emailRes.ok) {
-      // Mark email as sent
-      await supabase.from("orders").update({ delivery_email_sent: true }).eq("id", orderId);
+    // Mark email as sent
+    await supabase.from("orders").update({ delivery_email_sent: true }).eq("id", orderId);
 
-      return createCorsResponse(JSON.stringify({ success: true, emailId: emailData.id }), {
-        headers: { "Content-Type": "application/json" },
-      });
-    } else {
-      console.error("Resend error:", emailData);
-      return createCorsResponse(JSON.stringify({ error: "Failed to send email", details: emailData }), {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
+    return createCorsResponse(JSON.stringify({
+      success: true,
+      messageId: emailInfo.messageId,
+      accepted: emailInfo.accepted,
+      rejected: emailInfo.rejected,
+    }), {
+      headers: { "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("Error:", err);
     return createCorsResponse(JSON.stringify({ error: err.message }), {

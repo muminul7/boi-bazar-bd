@@ -15,8 +15,44 @@ function trimTrailingSlash(value: string): string {
   return value.replace(/\/+$/, "");
 }
 
+function stripWrappingQuotes(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length >= 2) {
+    const first = trimmed[0];
+    const last = trimmed[trimmed.length - 1];
+    if ((first === "\"" && last === "\"") || (first === "'" && last === "'")) {
+      return trimmed.slice(1, -1);
+    }
+  }
+
+  return trimmed;
+}
+
+function parseInteger(value: string, fallback: number): number {
+  const parsed = Number.parseInt(value, 10);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function parseBoolean(value: string | undefined, fallback: boolean): boolean {
+  if (value == null || value === "") {
+    return fallback;
+  }
+
+  const normalized = value.trim().toLowerCase();
+  if (["true", "1", "yes", "y", "on"].includes(normalized)) {
+    return true;
+  }
+
+  if (["false", "0", "no", "n", "off"].includes(normalized)) {
+    return false;
+  }
+
+  return fallback;
+}
+
 export function getAppConfig() {
   return {
+    appName: getEnv("APP_NAME", "eBoi"),
     appBaseUrl: getEnv("APP_BASE_URL", "https://eboi.shop"),
     supabaseUrl: requireEnv("SUPABASE_URL"),
     supabaseServiceRoleKey: requireEnv("SUPABASE_SERVICE_ROLE_KEY"),
@@ -39,8 +75,15 @@ export function getPaymentConfig() {
 }
 
 export function getEmailConfig() {
+  const smtpUser = stripWrappingQuotes(requireEnv("SMTP_USER"));
+
   return {
-    resendApiKey: requireEnv("RESEND_API_KEY"),
-    resendFromEmail: getEnv("RESEND_FROM_EMAIL", "noreply@socialgeekbd.com"),
+    smtpHost: stripWrappingQuotes(requireEnv("SMTP_HOST")),
+    smtpPort: parseInteger(getEnv("SMTP_PORT", "465"), 465),
+    smtpUser,
+    smtpPass: stripWrappingQuotes(requireEnv("SMTP_PASS")),
+    smtpSecure: parseBoolean(Deno.env.get("SMTP_SECURE"), true),
+    mailFromName: stripWrappingQuotes(getEnv("MAIL_FROM_NAME", "eBoi")),
+    mailFromAddress: stripWrappingQuotes(getEnv("MAIL_FROM_ADDRESS", smtpUser)),
   };
 }
